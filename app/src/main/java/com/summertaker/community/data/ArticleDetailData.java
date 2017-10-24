@@ -10,6 +10,7 @@ public class ArticleDetailData {
     private String content;
     private ArrayList<String> thumbnails;
     private ArrayList<String> images;
+    private ArrayList<String> iframes;
     private String parentTable;
     private String parentId;
 
@@ -74,6 +75,14 @@ public class ArticleDetailData {
 
     public void setImages(ArrayList<String> images) {
         this.images = images;
+    }
+
+    public ArrayList<String> getIframes() {
+        return iframes;
+    }
+
+    public void setIframes(ArrayList<String> iframes) {
+        this.iframes = iframes;
     }
 
     public String getParentTable() {

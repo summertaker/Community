@@ -147,21 +147,29 @@ public class TheqooParser extends BaseParser {
             root = root.select("div").first();
             if (root != null) {
                 //---------------------
-                // 이미지 목록 만들기
+                // 이미지 목록
                 //---------------------
                 ArrayList<String> thumbnails = new ArrayList<>();
                 ArrayList<String> images = new ArrayList<>();
-
-                for (Element img : root.select("img")) {
-                    String src = img.attr("src");
+                for (Element el : root.select("img")) {
+                    String src = el.attr("src");
                     //Log.e(mTag, src);
-
                     thumbnails.add(src);
                     images.add(src);
                 }
-
                 data.setThumbnails(thumbnails);
                 data.setImages(images);
+
+                //-----------------------
+                // IFRAME 목록
+                //-----------------------
+                ArrayList<String> iframes = new ArrayList<>();
+                for (Element el : root.select("iframe")) {
+                    String src = el.attr("src");
+                    Log.e(mTag, "iframe: " + src);
+                    iframes.add(src);
+                }
+                data.setIframes(iframes);
 
                 //---------------------
                 // 내용 HTML 만들기

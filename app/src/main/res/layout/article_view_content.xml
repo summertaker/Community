@@ -69,6 +69,15 @@
                     android:contentDescription="@null"
                     android:visibility="gone" />
 
+                <!-- 내용에 IFRAME이 여러 개인 경우 사용 -->
+                <LinearLayout
+                    android:id="@+id/loIframe"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:visibility="gone" />
+
                 <View
                     android:id="@+id/vwImageSpace"
                     android:layout_width="match_parent"

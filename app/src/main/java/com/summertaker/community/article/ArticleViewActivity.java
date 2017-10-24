@@ -107,7 +107,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
         switch (id) {
             case R.id.action_open_in_new:
-                openInNew();
+                openInNew(mUrl);
                 return true;
             case R.id.action_share:
                 share();
@@ -190,7 +190,6 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                     } else {
                         Picasso.with(this).load(thumbnail).placeholder(R.drawable.placeholder).into(iv);
                     }
-
                     iv.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -200,26 +199,6 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                             }
                         }
                     });
-
-                    // ERROR: Bitmap too large to be uploaded into a texture (720x15207, max=8192x8192)
-
-                    /*Picasso.with(this).load(thumbnail).placeholder(R.drawable.placeholder).into(new Target() {
-                        @Override
-                        public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
-                            int width = bitmap.getWidth();
-                            Log.d(mTag, "============= size: " + width + "x " + bitmap.getHeight());
-                        }
-
-                        @Override
-                        public void onBitmapFailed(Drawable errorDrawable) {
-                            Log.e(mTag, "IMAGE SAVE ERROR!!! onBitmapFailed()");
-                        }
-
-                        @Override
-                        public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-                        }
-                    });*/
                 }
             } else if (imageCount > 1) {
                 //------------------------
@@ -237,22 +216,12 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                     }
 
                     final ProportionalImageView iv = new ProportionalImageView(this);
-                    //final ImageView iv = new ImageView(this);
-                    //if (i == imageArray.length - 1) {
                     if (i == 0) {
                         iv.setLayoutParams(mParamsNoMargin);
                     } else {
                         iv.setLayoutParams(mParams);
                     }
-                    //iv.setAdjustViewBounds(true);
-                    //iv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                    //iv.setBackgroundColor(getResources().getColor(R.color.card_background));
                     loPicture.addView(iv);
-
-                    //int placeholder = R.drawable.placeholder_green;
-                    //if (thumbnailUrl.contains("nogizaka46")) {
-                    //    placeholder = R.drawable.placeholder_purple;
-                    //}
 
                     if (thumbnail.toLowerCase().contains(".gif")) {
                         Glide.with(this).asGif().load(thumbnail).into(iv);
@@ -272,10 +241,47 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             }
         }
 
+        int iframeCount = 0;
+
+        if (mArticleDetailData.getIframes() != null) {
+            iframeCount = mArticleDetailData.getIframes().size();
+
+            if (iframeCount > 0) {
+                //------------------------
+                // IFRAME이 여러 개인 경우
+                //------------------------
+                LinearLayout loIframe = findViewById(R.id.loIframe);
+                //loPicture.removeAllViews();
+                loIframe.setVisibility(View.VISIBLE);
+
+                for (int i = 0; i < iframeCount; i++) {
+                    final String iframe = mArticleDetailData.getIframes().get(i);
+
+                    TextView tv = new TextView(this);
+                    if (i == 0) {
+                        tv.setLayoutParams(mParamsNoMargin);
+                    } else {
+                        tv.setLayoutParams(mParams);
+                    }
+                    loIframe.addView(tv);
+                    tv.setText(iframe);
+                    tv.setTextColor(getResources().getColor(R.color.hyperLink));
+
+                    tv.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Log.e(mTag, iframe);
+                            openInNew(iframe);
+                        }
+                    });
+                }
+            }
+        }
+
         // 내용 텍스트 출력하기
         String content = mArticleDetailData.getContent();
         if (!content.isEmpty()) {
-            if (imageCount > 0) {
+            if (imageCount > 0 || iframeCount > 0) {
                 // 사진과 내용 사이에 공간 만들기
                 View view = findViewById(R.id.vwImageSpace);
                 view.setVisibility(View.VISIBLE);
@@ -321,8 +327,8 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         mScrollView.fullScroll(View.FOCUS_UP);
     }
 
-    public void openInNew() {
-        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(mUrl));
+    public void openInNew(String url) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         startActivity(intent);
     }
 
