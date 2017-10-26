@@ -40,9 +40,9 @@ public class BaseApplication extends Application {
 
         mSiteList = new ArrayList<>();
 
+        mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
         mSiteList.add(new SiteData("베오베", USER_AGENT_MOBILE, "http://m.todayhumor.co.kr/list.php?table=bestofbest", "&page="));
         mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
-        mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
         mSiteList.add(new SiteData("48스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=talk48&filter_mode=normal&category=161632742", "&page="));
         mSiteList.add(new SiteData("48돌", USER_AGENT_MOBILE, "http://theqoo.net/dol48?filter_mode=normal", "&page="));
         //mSiteList.add(new SiteData("루리웹힛갤", USER_AGENT_MOBILE, "http://m.ruliweb.com/best/selection", "?page=", 10));

@@ -137,86 +137,162 @@ public class TheqooParser extends BaseParser {
 
         Document doc = Jsoup.parse(response);
 
-        Element root = doc.select(".read-body").first();
+        Element root = doc.select(".xe_content").first();
 
         if (root == null) {
-            Log.e(mTag, "root is null...");
+            Log.e(mTag, "root[.xe_content] is null...");
         } else {
             //Log.e(mTag, "root: "+root.text());
 
-            root = root.select("div").first();
-            if (root != null) {
-                //---------------------
-                // 이미지 목록
-                //---------------------
-                ArrayList<String> thumbnails = new ArrayList<>();
-                ArrayList<String> images = new ArrayList<>();
-                for (Element el : root.select("img")) {
-                    String src = el.attr("src");
-                    //Log.e(mTag, src);
-                    thumbnails.add(src);
-                    images.add(src);
+            String content = root.html();
+            //Log.e(mTag, "원본: " + content);
+
+            content = content.replaceAll("\\s*<object\\s*(.|\")*>.*</object>\\s*", ""); // 어플이 멈추기에 일단 지운다.
+
+            ArrayList<String> thumbnails = new ArrayList<>();
+            ArrayList<String> images = new ArrayList<>();
+
+            //---------------------
+            // 첨부 이미지 목록
+            //---------------------
+            //int imgCount = 0;
+            for (Element el : root.select("img")) {
+                String src = el.attr("src");
+                //Log.e(mTag, src);
+
+                if (src.contains("//attach.mail.daum.net/") || src.contains("//mail1.daumcdn.net")) {
+                    continue;
                 }
-                data.setThumbnails(thumbnails);
-                data.setImages(images);
+                thumbnails.add(src);
+                images.add(src);
 
-                //-----------------------
-                // IFRAME 목록
-                //-----------------------
-                ArrayList<String> iframes = new ArrayList<>();
-                for (Element el : root.select("iframe")) {
-                    String src = el.attr("src");
-                    Log.e(mTag, "iframe: " + src);
-                    iframes.add(src);
-                }
-                data.setIframes(iframes);
-
-                //---------------------
-                // 내용 HTML 만들기
-                //---------------------
-                String content = root.html();
-                //Log.e(mTag, content);
-
-                //content = toPlainText.getPlainText(root);
-                //Log.e(mTag, content);
-
-                //-------------------------------------------
-                // https://regexone.com/lesson/whitespaces
-                //-------------------------------------------
-                // \\s 공백
-                // . Any Character
-                // (…) Capture Group
-                // (.|\") 아무 문자 또는 " 기호
-                //-------------------------------------------
-                /*
-                1)
-                <div> <br> </div>
-                표현 replaceAll("\\s*<div>\\s*<br>\\s*</div>\\s*", "");
-
-                2)
-                <div> &nbsp; </div>
-                표현 replaceAll("\\s*<div>\\s*&nbsp;\\s*</div>\\s*", "");
-
-                3) 1)과 2)를 합해서
-                표현 replaceAll("\\s*<div>\\s*(<br>|&nbsp;)\\s*</div>\\s*", "");
-
-                4) <div style=""> <br> &nbsp; </div>
-                표현 replaceAll("\\s*<div\\s*(.|\")*>\\s*(<br>)*(&nbsp;)*\\s*</div>\\s*", "");
-                */
-                content = content.replaceAll("\\s*<img.+?>\\s*", "");
-                //content = content.replaceAll("\\s*<div\\s*(.|\")*>\\s*(<br>)*(&nbsp;)*\\s*</div>\\s*", "");
-                //content = content.replaceAll("</div>\\s*<br>\\s*", "</div>");
-                //content = content.replaceAll("<br\\s*.*>\\s*<br\\s*.*>\\s*<br\\s*.*>\\s*", "<br><br>");
-                //content = content.replaceAll("<br\\s*.*>\\s*<br\\s*.*>\\s*<br\\s*.*>\\s*", "<br><br>");
-
-                String trash = "<div class=\"read-file\">\\s*<h3>File List</h3>\\s*<ul>\\s*</ul>\\s*</div>";
-                content = content.replaceAll(trash, "");
-
-                content = Html.fromHtml(content).toString().trim();
-                //Log.e(mTag, ">>" + content + "<<");
-
-                data.setContent(content);
+                //imgCount++;
+                //if (imgCount > 10) { // 스마트폰 메모리 부족 에러 발생하니 자른다.
+                //    break;
+                //}
             }
+
+            //----------------------------------------------------------
+            // 더쿠 이미지 단축 URL 링크를 이미지로 출력할 수 있도록 변환
+            // http://img.theqoo.net/PZfEq
+            // http://img.theqoo.net/img/PZfEq.jpg
+            //----------------------------------------------------------
+            String regex = "http\\://img\\.theqoo\\.net/[0-9a-zA-Z]+";
+            Pattern pattern = Pattern.compile(regex);
+            Matcher match = pattern.matcher(content);   // get a matcher object
+            while (match.find()) {
+                String src = match.group();
+                //Log.e(mTag, "src: " + match.group());
+
+                if (src.contains(".jpg") || src.contains(".png")) {
+                    continue;
+                }
+
+                if (src.substring(src.length() - 4).equals("/img")) {
+                    continue;
+                }
+
+                //Log.e(mTag, "더쿠 IMG: " + src);
+
+                // URL 텍스트는 내용에서 제거해 준다.
+                content = content.replace(src, "");
+
+                src = src.replaceAll("</?.+>", "");
+                src = src.replace("http://img.theqoo.net/", "http://img.theqoo.net/img/") + ".jpg";
+
+                thumbnails.add(src);
+                images.add(src);
+            }
+
+            data.setThumbnails(thumbnails);
+            data.setImages(images);
+
+            //----------------------
+            // 외부 링크 목록 설정
+            //----------------------
+            ArrayList<String> outLinks = new ArrayList<>();
+
+            //-------------------------------------------------------------------------
+            // 외부 링크 (1) - 인스타그램
+            // https://www.instagram.com/p/BasYqhFBIb7/
+            //-------------------------------------------------------------------------
+            regex = "https\\://www\\.instagram\\.com/p/[0-9a-zA-Z]+/?";
+            pattern = Pattern.compile(regex);
+            match = pattern.matcher(content);   // get a matcher object
+            while (match.find()) {
+                String src = match.group();
+                //Log.e(mTag, "인스타그램: " + src);
+
+                // URL 텍스트는 내용에서 제거해 준다.
+                content = content.replace(src, "");
+                outLinks.add(src);
+            }
+
+            //---------------------------------------------
+            // 외부 링크 (2) - 네이버/유튜브 IFRAME 동영상
+            //---------------------------------------------
+            for (Element el : root.select("iframe")) {
+                String src = el.attr("src");
+                //Log.e(mTag, "네이버: " + src);
+
+                content = content.replace(src, "");
+                outLinks.add(src);
+            }
+
+            data.setOutLinks(outLinks);
+
+            //-------------------------------------------------------------------------
+            // 트위터 URL 텍스트 제거 - 사용자들이 더쿠에 트위터 이미지를 같이 올려준다.
+            //-------------------------------------------------------------------------
+            content = content.replaceAll("https://twitter.com/[_|0-9a-zA-Z]+/status/[0-9]{18}", "");
+
+            //---------------------
+            // 내용 HTML 만들기
+            //---------------------
+            //content = toPlainText.getPlainText(root);
+            //Log.e(mTag, content);
+
+            //-------------------------------------------
+            // https://regexone.com/lesson/whitespaces
+            //-------------------------------------------
+            // \\s 공백
+            // . Any Character
+            // (…) Capture Group
+            // (.|\") 아무 문자 또는 " 기호
+            //-------------------------------------------
+            /*
+            1)
+            <div> <br> </div>
+            replaceAll("\\s*<div>\\s*<br>\\s*</div>\\s*", "");
+
+            2)
+            <div> &nbsp; </div>
+            replaceAll("\\s*<div>\\s*&nbsp;\\s*</div>\\s*", "");
+
+            3) 1)과 2)를 합해서
+            replaceAll("\\s*<div>\\s*(<br>|&nbsp;)\\s*</div>\\s*", "");
+
+            4) <div style=""> <br> &nbsp; </div>
+            replaceAll("\\s*<div\\s*(.|\")*>\\s*(<br>)*(&nbsp;)*\\s*</div>\\s*", "");
+            */
+            content = content.replaceAll("\\s*<img.+?>\\s*", "");
+            content = content.replaceAll("<p\\s*(.|\")*>\\s*(<br>|&nbsp;)*\\s*</p>", "");
+            //content = content.replaceAll("<p\\s*(.|\")*>\\s*<br>\\s*</p>", "");
+            content = content.replaceAll("<div\\s*(.|\")*>\\s*<br>\\s*</div>", "");
+            content = content.replaceAll("\\s*<br>\\s*<br>\\s*", "");
+            //content = content.replaceAll("\\s*<div\\s*(.|\")*>\\s*(<br>)*(&nbsp;)*\\s*</div>\\s*", "");
+            //content = content.replaceAll("</div>\\s*<br>\\s*", "</div>");
+            //content = content.replaceAll("<br\\s*.*>\\s*<br\\s*.*>\\s*<br\\s*.*>\\s*", "<br><br>");
+            //content = content.replaceAll("<br\\s*.*>\\s*<br\\s*.*>\\s*<br\\s*.*>\\s*", "<br><br>");
+
+            String temp = "\\s*<div class=\"read-file\">\\s*<h3>File List</h3>\\s*<ul>\\s*</ul>\\s*</div>\\s*";
+            content = content.replaceAll(temp, "").trim();
+
+            Log.e(mTag, "결과: " + content);
+
+            content = Html.fromHtml(content).toString();
+
+            data.setContent(content);
         }
 
         return data;

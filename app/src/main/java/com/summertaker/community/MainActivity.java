@@ -31,7 +31,7 @@ public class MainActivity extends BaseActivity
     private static final int REQUEST_PERMISSION_CODE = 100;
 
     private Toolbar mToolbar;
-    private ProgressBar mPbToolbar;
+    //private ProgressBar mPbToolbar;
 
     private ActionBarDrawerToggle mDrawerToggle;
 
@@ -54,9 +54,7 @@ public class MainActivity extends BaseActivity
             }
         });
 
-        mPbToolbar = findViewById(R.id.toolbar_progress_bar);
-        //mPbLoading = findViewById(R.id.pbLoading);
-        //mLoLoadMore = findViewById(R.id.loLoadMore);
+        //mPbToolbar = findViewById(R.id.toolbar_progress_bar);
 
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -227,11 +225,10 @@ public class MainActivity extends BaseActivity
     public void onArticleListFragmentEvent(String event) {
         switch (event) {
             case "onLoadDataStarted":
-                //mLoLoadMore.setVisibility(View.VISIBLE);
+                //mPbToolbar.setVisibility(View.VISIBLE); -- Fragment 여러 개가 호출하므로 빼자
                 break;
             case "onLoadDataFinished":
-                //mPbLoading.setVisibility(View.GONE);
-                //mLoLoadMore.setVisibility(View.GONE);
+                //mPbToolbar.setVisibility(View.GONE);
                 break;
         }
     }

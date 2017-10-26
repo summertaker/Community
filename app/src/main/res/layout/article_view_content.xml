@@ -35,7 +35,8 @@
                     android:padding="@dimen/activity_margin"
                     android:text="@null"
                     android:textColor="@color/text_color"
-                    android:textSize="@dimen/text_size" />
+                    android:textSize="@dimen/text_size"
+                    android:textStyle="bold" />
 
                 <View
                     android:layout_width="match_parent"
@@ -60,6 +61,16 @@
                     android:orientation="vertical"
                     android:visibility="gone" />
 
+                <!-- 사진이 많아 메모리 문제로 일부만 보여줄 경우 표시할 메세지 -->
+                <TextView
+                    android:id="@+id/tvPicture"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:textColor="@color/colorPrimary"
+                    android:visibility="gone" />
+
                 <!-- 내용에 사진이 한 개인 경우 사용 -->
                 <ImageView
                     android:id="@+id/ivPicture"
@@ -69,20 +80,19 @@
                     android:contentDescription="@null"
                     android:visibility="gone" />
 
-                <!-- 내용에 IFRAME이 여러 개인 경우 사용 -->
+                <!-- 외부 링크 URL 목록 -->
                 <LinearLayout
-                    android:id="@+id/loIframe"
+                    android:id="@+id/loOutlink"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
                     android:orientation="vertical"
                     android:visibility="gone" />
 
                 <View
                     android:id="@+id/vwImageSpace"
                     android:layout_width="match_parent"
-                    android:visibility="gone"
-                    android:layout_height="12dp" />
+                    android:layout_height="12dp"
+                    android:visibility="gone" />
 
                 <!-- 내용 텍스트 -->
                 <TextView

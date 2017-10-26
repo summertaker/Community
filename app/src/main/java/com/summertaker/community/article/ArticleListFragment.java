@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.android.volley.AuthFailureError;
@@ -49,6 +50,7 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
     private ArticleListAdapter mAdapter;
     private ListView mListView;
     private EndlessScrollListener mEndlessScrollListener;
+    private LinearLayout mLoLoadMore;
 
     private boolean mIsReloadMode = false;
 
@@ -147,6 +149,8 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
 
         mListView.setOnScrollListener(mEndlessScrollListener);
 
+        mLoLoadMore = rootView.findViewById(R.id.loLoadMore);
+
         int position = getArguments().getInt("position");
 
         mSiteData = BaseApplication.getInstance().getSiteList().get(position);
@@ -170,6 +174,8 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
         if (!mIsLoading) {
             mIsLoading = true;
             mListener.onArticleListFragmentEvent("onLoadDataStarted");
+
+            mLoLoadMore.setVisibility(View.VISIBLE);
 
             requestData();
         }
@@ -244,6 +250,8 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
 
         mIsLoading = false;
         mListener.onArticleListFragmentEvent("onLoadDataFinished");
+
+        mLoLoadMore.setVisibility(View.GONE);
     }
 
     public boolean goBack() {
