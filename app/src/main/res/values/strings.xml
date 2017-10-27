@@ -23,4 +23,8 @@
     <string name="title_activity_web">WebActivity</string>
     <string name="title_activity_image_view">ImageViewActivity</string>
     <string name="title_activity_download">DownloadActivity</string>
+
+    <string name="generic_server_down">generic_server_down</string>
+    <string name="no_internet">no_internet</string>
+    <string name="generic_error">generic_error</string>
 </resources>

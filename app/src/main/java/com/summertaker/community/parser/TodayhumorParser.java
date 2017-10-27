@@ -1,11 +1,13 @@
 package com.summertaker.community.parser;
 
 import android.text.Html;
+import android.util.Log;
 
 import com.summertaker.community.common.BaseParser;
 import com.summertaker.community.data.ArticleDetailData;
 import com.summertaker.community.data.ArticleListData;
 import com.summertaker.community.data.CommentData;
+import com.summertaker.community.data.MediaData;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -111,20 +113,20 @@ public class TodayhumorParser extends BaseParser {
         //-----------------------------------------------------------------------------------------------------
         //HtmlToPlainText toPlainText = new HtmlToPlainText();
 
-        String search = "var parent_table = \"(\\w+)\";";
-        Pattern pattern = Pattern.compile(search);
+        String regex = "var parent_table = \"(\\w+)\";";
+        Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(response);
         while (matcher.find()) {
             //Log.d(mTag, "parentTable: " + matcher.group(1));
-            data.setParentTable(matcher.group(1));
+            data.setTable(matcher.group(1));
         }
 
-        search = "var parent_id = \"(\\w+)\";";
-        pattern = Pattern.compile(search);
+        regex = "var parent_id = \"(\\w+)\";";
+        pattern = Pattern.compile(regex);
         matcher = pattern.matcher(response);
         while (matcher.find()) {
             //Log.d(mTag, "parentId: " + matcher.group(1));
-            data.setParentId(matcher.group(1));
+            data.setId(matcher.group(1));
         }
 
         if (root != null) {
@@ -133,6 +135,34 @@ public class TodayhumorParser extends BaseParser {
 
             //content = toPlainText.getPlainText(root);
             //Log.d(mTag, content);
+
+            ArrayList<MediaData> mediaDatas = new ArrayList<>();
+
+            // 이미지 태그 목록
+            for (Element img : root.select("img")) {
+                String src = img.attr("src");
+                Log.d(mTag, "src: " + src);
+
+                // 이미지 태그 텍스트는 내용에서 제거
+                content = content.replaceAll(img.html(), "");
+
+                addMediaData(mediaDatas, src, src, null);
+            }
+
+            // 비디오 태그 목록
+            /*
+            <video class='anigif_html5_video' style='max-width:100%' loop muted playsinline webkit-playsinline preload='auto' autoplay width='__w480' height='__h480'
+                poster='http://thimg.todayhumor.co.kr/upfile/201710/1509015730c34ae05f40204741adeaa84238631b07__mn262672__w480__h480__f4661891__Ym201710__ANIGIF.jpg'
+                data-setup='{'example_option':true}'>
+				<source src='http://thimg.todayhumor.co.kr/upfile/201710/1509015730c34ae05f40204741adeaa84238631b07__mn262672__w480__h480__f4661891__Ym201710__ANIGIF.mp4' type='video/mp4'>
+			</video>
+            */
+            for (Element video : root.select("video")) {
+                String src = video.attr("poster");
+                Log.d(mTag, "src: " + src);
+
+                addMediaData(mediaDatas, src, src, null);
+            }
 
             //-------------------------------------------
             // https://regexone.com/lesson/whitespaces
@@ -157,28 +187,17 @@ public class TodayhumorParser extends BaseParser {
             4) <div style=""> <br> &nbsp; </div>
             표현 replaceAll("\\s*<div\\s*(.|\")*>\\s*(<br>)*(&nbsp;)*\\s*</div>\\s*", "");
             */
-            content = content.replaceAll("\\s*<img.+?>\\s*", "");
             content = content.replaceAll("\\s*<div\\s*(.|\")*>\\s*(<br>)*(&nbsp;)*\\s*</div>\\s*", "");
             content = content.replaceAll("</div>\\s*<br>\\s*", "</div>");
             content = content.replaceAll("<br\\s*.*>\\s*<br\\s*.*>\\s*<br\\s*.*>\\s*", "<br><br>");
             content = content.replaceAll("<br\\s*.*>\\s*<br\\s*.*>\\s*<br\\s*.*>\\s*", "<br><br>");
+
+            Log.e(mTag, "결과\n" + content);
+
             content = Html.fromHtml(content).toString();
 
             data.setContent(content);
-
-            ArrayList<String> thumbnails = new ArrayList<>();
-            ArrayList<String> images = new ArrayList<>();
-
-            for (Element img : root.select("img")) {
-                String src = img.attr("src");
-                //src = "http://www.keyakizaka46.com" + src;
-
-                thumbnails.add(src);
-                images.add(src);
-            }
-
-            data.setThumbnails(thumbnails);
-            data.setImages(images);
+            data.setMediaDatas(mediaDatas);
         }
 
         return data;
@@ -200,7 +219,8 @@ public class TodayhumorParser extends BaseParser {
                     <h2 class="listSubject" >네이버를 조져야됨..<span class="list_comment_count"> <span class="memo_count">[3]</span></span></h2>
                 </div>
                 <div>
-                    <span class="list_viewTitle">조회:</span><span class="list_viewCount">1374</span>	            <span class="list_okNokTitle">추천:</span><span class="list_okNokCount">53</span>
+                    <span class="list_viewTitle">조회:</span><span class="list_viewCount">1374</span>
+                    <span class="list_okNokTitle">추천:</span><span class="list_okNokCount">53</span>
                     <span class="list_iconWrap">
                     </span>
                 </div>

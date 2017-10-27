@@ -141,8 +141,8 @@ public class RuliwebParser extends BaseParser {
                 images.add(src);
             }
 
-            data.setThumbnails(thumbnails);
-            data.setImages(images);
+            //data.setThumbnails(thumbnails);
+            //data.setTargets(images);
         }
 
         return data;

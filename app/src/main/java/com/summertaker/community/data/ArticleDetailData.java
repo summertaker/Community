@@ -8,11 +8,10 @@ public class ArticleDetailData {
     private String date;
     private String url;
     private String content;
-    private ArrayList<String> thumbnails;
-    private ArrayList<String> images;
+    private ArrayList<MediaData> mediaDatas;
     private ArrayList<String> outLinks;
-    private String parentTable;
-    private String parentId;
+    private String table;
+    private String id;
 
     public ArticleDetailData() {
     }
@@ -61,20 +60,12 @@ public class ArticleDetailData {
         this.url = url;
     }
 
-    public ArrayList<String> getThumbnails() {
-        return thumbnails;
+    public ArrayList<MediaData> getMediaDatas() {
+        return mediaDatas;
     }
 
-    public void setThumbnails(ArrayList<String> thumbnails) {
-        this.thumbnails = thumbnails;
-    }
-
-    public ArrayList<String> getImages() {
-        return images;
-    }
-
-    public void setImages(ArrayList<String> images) {
-        this.images = images;
+    public void setMediaDatas(ArrayList<MediaData> mediaDatas) {
+        this.mediaDatas = mediaDatas;
     }
 
     public ArrayList<String> getOutLinks() {
@@ -85,19 +76,19 @@ public class ArticleDetailData {
         this.outLinks = outLinks;
     }
 
-    public String getParentTable() {
-        return parentTable;
+    public String getTable() {
+        return table;
     }
 
-    public void setParentTable(String parentTable) {
-        this.parentTable = parentTable;
+    public void setTable(String table) {
+        this.table = table;
     }
 
-    public String getParentId() {
-        return parentId;
+    public String getId() {
+        return id;
     }
 
-    public void setParentId(String parentId) {
-        this.parentId = parentId;
+    public void setId(String id) {
+        this.id = id;
     }
 }
