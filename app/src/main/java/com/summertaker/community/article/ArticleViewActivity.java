@@ -1,9 +1,16 @@
 package com.summertaker.community.article;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.text.Html;
+import android.text.Spannable;
+import android.text.method.LinkMovementMethod;
+import android.text.style.ImageSpan;
+import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -45,6 +52,8 @@ import com.summertaker.community.parser.TheqooParser;
 import com.summertaker.community.parser.TodayhumorParser;
 import com.summertaker.community.parser.TwitterParser;
 import com.summertaker.community.util.ExpandableHeightListView;
+import com.summertaker.community.util.ImageUtil;
+import com.summertaker.community.util.PicassoImageGetter;
 import com.summertaker.community.util.ProportionalImageView;
 
 import org.json.JSONException;
@@ -264,22 +273,6 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         }
 
         /*
-        // 트위터 링크 처리하기
-        if (mArticleDetailData.getTwitters() != null) {
-            for (String url : mArticleDetailData.getTwitters()) {
-                //Log.e(mTag, "트위터 URL: " + url);
-
-                MediaData mediaData = new MediaData();
-                mediaData.setThumbnail("");
-                mediaData.setUrl(url);
-                crateImage(mediaData);
-
-                doStringRequest(url, Request.Method.GET);
-            }
-        }
-        */
-
-        /*
         //-------------------------------
         // 외부 링크 URL 처리하기
         //-------------------------------
@@ -353,6 +346,22 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             TextView tvContent = findViewById(R.id.tvContent);
             tvContent.setVisibility(View.VISIBLE);
             tvContent.setText(content);
+
+            /*
+            content = root.html(); -- 파서에서는 원본 HTML을 리턴하게 한다.
+
+            // https://medium.com/@rajeefmk/android-textview-and-image-loading-from-url-part-1-a7457846abb6
+            Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleViewActivity.this, tvContent, content);
+            ImageUtil.setClickListenerOnHtmlImageGetter(html, new ImageUtil.Callback() {
+                @Override
+                public void onImageClick(String imageUrl) {
+                    Log.e(mTag, "imageUrl: " + imageUrl);
+                }
+            }, true);
+
+            tvContent.setText(html);
+            tvContent.setMovementMethod(LinkMovementMethod.getInstance());
+            */
         }
 
         // 댓글 로드하기

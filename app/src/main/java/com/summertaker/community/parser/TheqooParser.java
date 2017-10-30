@@ -248,6 +248,8 @@ public class TheqooParser extends BaseParser {
                 addMediaData(mediaDatas, url, null, url);
             }
 
+            articleDetailData.setMediaDatas(mediaDatas);
+
             //ArrayList<String> outLinks = new ArrayList<>();
             //articleDetailData.setOutLinks(outLinks);
 
@@ -263,7 +265,6 @@ public class TheqooParser extends BaseParser {
             // 태그 지우기
             content = content.replaceAll("\\s*<img[^>]*>\\s*", "");
             content = content.replaceAll("\\s*<iframe[^>]*></iframe>\\s*", "");
-
             content = content.replaceAll("\\s*<div class=\"read-file\">\\s*<h3>File List</h3>\\s*<ul>\\s*</ul>\\s*</div>\\s*", "").trim();
 
             //Log.e(mTag, "결과\n" + content);
@@ -271,7 +272,6 @@ public class TheqooParser extends BaseParser {
             content = Html.fromHtml(content).toString();
 
             articleDetailData.setContent(content);
-            articleDetailData.setMediaDatas(mediaDatas);
         }
 
         return articleDetailData;
