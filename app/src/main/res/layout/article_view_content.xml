@@ -119,21 +119,21 @@
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#d7d7d7" />
+                    android:background="#d1d1d1" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="#eee"
                     android:padding="@dimen/activity_margin"
-                    android:text="@string/recommended_comment"
+                    android:text="@string/comment"
                     android:textColor="@color/text_color"
                     android:textSize="@dimen/text_size" />
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="#d7d7d7" />
+                    android:background="#d1d1d1" />
 
             </LinearLayout>
 
@@ -143,7 +143,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
-                android:divider="#D7CCC8"
+                android:divider="#d1d1d1"
                 android:dividerHeight="1dp"
                 android:scrollbarStyle="outsideOverlay"
                 android:visibility="gone" />

@@ -3,6 +3,8 @@ package com.summertaker.community.common;
 import android.app.Application;
 import android.os.Environment;
 import android.text.TextUtils;
+import android.util.DisplayMetrics;
+import android.view.Display;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -41,11 +43,17 @@ public class BaseApplication extends Application {
         mSiteList = new ArrayList<>();
 
         mSiteList.add(new SiteData("베오베", USER_AGENT_MOBILE, "http://m.todayhumor.co.kr/list.php?table=bestofbest", "&page="));
+
+        //mSiteList.add(new SiteData("루리웹힛갤", USER_AGENT_MOBILE, "http://m.ruliweb.com/best/selection", "?page=", 10));
+        mSiteList.add(new SiteData("루리웹PC", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1003/list", "?page="));
+        mSiteList.add(new SiteData("루리웹모바일", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1004/list", "?page="));
+        mSiteList.add(new SiteData("루리웹콘솔", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1001/list", "?page="));
+
         mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
         mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
         mSiteList.add(new SiteData("48스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=talk48&filter_mode=normal&category=161632742", "&page="));
         mSiteList.add(new SiteData("48돌", USER_AGENT_MOBILE, "http://theqoo.net/dol48?filter_mode=normal", "&page="));
-        //mSiteList.add(new SiteData("루리웹힛갤", USER_AGENT_MOBILE, "http://m.ruliweb.com/best/selection", "?page=", 10));
+
         //mSiteList.add(new SiteData("보배베스트", "http://m.bobaedream.co.kr/board/new_writing/best/1"));
         //mSiteList.add(new SiteData("웃대오늘베", "http://m.humoruniv.com/board/list.html?table=pds&st=day&pg=0"));
         //mSiteList.add(new SiteData("뽐뿌핫", "http://m.ppomppu.co.kr/new/hot_bbs.php?page=1"));

@@ -7,7 +7,7 @@
     <string name="action_share">공유</string>
     <string name="app_name">Community</string>
     <string name="apply">적용하기</string>
-    <string name="comment">답글</string>
+    <string name="comment">댓글</string>
     <string name="download">다운로드</string>
     <string name="copyright">summertaker@gmail.com</string>
     <string name="finish">완료</string>
@@ -17,7 +17,7 @@
     <string name="no">아니오</string>
     <string name="ok">예</string>
     <string name="page">페이지</string>
-    <string name="recommended_comment">추천 답글</string>
+    <string name="recommended_comment">추천 댓글</string>
     <string name="site">사이트</string>
     <string name="title_activity_article_view">ArticleViewActivity</string>
     <string name="title_activity_web">WebActivity</string>

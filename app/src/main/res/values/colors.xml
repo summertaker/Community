@@ -4,7 +4,12 @@
     <color name="colorPrimaryDark">#004D40</color>
     <color name="colorAccent">#00796B</color>
 
+    <color name="white">#ffffff</color>
+
     <color name="text_color">#000000</color>
+    <color name="comment_text_color">#888888</color>
+    <color name="best_comment_text_color">#000000</color>
+    <color name="best_comment_background_color">#ececff</color>
 
     <color name="hyperLink">#0066ff</color>
 

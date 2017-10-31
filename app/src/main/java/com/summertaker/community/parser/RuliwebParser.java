@@ -7,6 +7,7 @@ import com.summertaker.community.common.BaseParser;
 import com.summertaker.community.data.ArticleDetailData;
 import com.summertaker.community.data.ArticleListData;
 import com.summertaker.community.data.CommentData;
+import com.summertaker.community.data.MediaData;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -53,13 +54,20 @@ public class RuliwebParser extends BaseParser {
         Element root = doc.select(".board_list_table").first();
 
         if (root != null) {
-            for (Element row : root.select(".title")) {
+            for (Element row : root.select(".row")) {
                 String title = "";
                 String commentCount = "";
                 String recommendCount = "";
                 String url = "";
 
-                Element el = row.select("a").first();
+                Element el;
+
+                el = row.select("a.cate_label").first();
+                if (el == null) {
+                    continue; // 공지사항은 출력하지 않는다.
+                }
+
+                el = row.select("a.subject_link").first();
                 if (el == null) {
                     continue;
                 }
@@ -81,133 +89,124 @@ public class RuliwebParser extends BaseParser {
         }
     }
 
-    public ArticleDetailData parseDetail(String response) {
-        ArticleDetailData data = new ArticleDetailData();
+    public void parseDetail(String response, ArticleDetailData articleDetailData, ArrayList<CommentData> commentList) {
 
         Document doc = Jsoup.parse(response);
-
-        Element root = doc.select(".view_content").first();
+        Element root = doc.select(".board_main_view").first();
 
         //-----------------------------------------------------------------------------------------------------
         // https://stackoverflow.com/questions/26346698/parsing-html-into-formatted-plaintext-using-jsoup
         //-----------------------------------------------------------------------------------------------------
         //HtmlToPlainText toPlainText = new HtmlToPlainText();
 
+        //ArticleDetailData articleDetailData = new ArticleDetailData();
+
         if (root != null) {
-            String content = root.html();
-            Log.d(mTag, content);
+            Element el;
 
-            //content = toPlainText.getPlainText(root);
-            //Log.d(mTag, content);
-
-            //-------------------------------------------
-            // https://regexone.com/lesson/whitespaces
-            //-------------------------------------------
-            // \\s 공백
-            // . Any Character
-            // (…) Capture Group
-            // (.|\") 아무 문자 또는 " 기호
-            //-------------------------------------------
-            /*
-            1)
-            <div> <br> </div>
-            표현 replaceAll("\\s*<div>\\s*<br>\\s*</div>\\s*", "");
-
-            2)
-            <div> &nbsp; </div>
-            표현 replaceAll("\\s*<div>\\s*&nbsp;\\s*</div>\\s*", "");
-
-            3) 1)과 2)를 합해서
-            표현 replaceAll("\\s*<div>\\s*(<br>|&nbsp;)\\s*</div>\\s*", "");
-
-            4) <div style=""> <br> &nbsp; </div>
-            표현 replaceAll("\\s*<div\\s*(.|\")*>\\s*(<br>)*(&nbsp;)*\\s*</div>\\s*", "");
-            */
-            content = content.replaceAll("<img.+?>", "");
-            content = content.replaceAll("\\s*<p\\s*(.|\")*>\\s*</p>\\s*", "");
-            content = content.replaceAll("<p>&nbsp;</p>\\s*<p>&nbsp;</p>", "<br>");
-            content = Html.fromHtml(content).toString();
-
-            data.setContent(content);
-
-            ArrayList<String> thumbnails = new ArrayList<>();
-            ArrayList<String> images = new ArrayList<>();
-
-            for (Element img : root.select("img")) {
-                String src = img.attr("src");
-                //src = "http://www.keyakizaka46.com" + src;
-
-                thumbnails.add(src);
-                images.add(src);
+            // 원본 출처
+            String sourceHtml = "";
+            el = root.select(".source_url").first();
+            if (el != null) {
+                Element a = el.select("a").first();
+                String url = a.attr("href");
+                String urlString = (url.length() > 25) ? url.substring(0, 25) + "..." : url;
+                sourceHtml = "<p>출처: <a href=\"" + url + "\">" + urlString + "</a></p>";
             }
+
+            // 본문 내용
+            el = root.select(".view_content").first();
+
+            String content = el.html();
+            Log.e(mTag, "원본\n" + content);
+
+            content = content.replaceAll("src=\"//", "src=\"http://");
+
+            content = sourceHtml + content;
+
+            ArrayList<MediaData> mediaDatas = new ArrayList<>();
+
+            /*
+            //---------------------
+            // 이미지 태그 목록
+            //---------------------
+            //int imgCount = 0;
+            for (Element el : root.select("img")) {
+                String src = el.attr("src");
+                //Log.e(mTag, src);
+
+                src = "http:" + src;
+
+                addMediaData(mediaDatas, src, src, null);
+            }
+            */
+
+            //--------------------------------------
+            // 유튜브 썸네일 사진과 링크 파싱하기
+            //--------------------------------------
+            parseYoutube(root, content, mediaDatas);
+
+            articleDetailData.setMediaDatas(mediaDatas);
+
+            //content = content.replaceAll("<img.+?>", "");
+            //content = content.replaceAll("\\s*<p\\s*(.|\")*>\\s*</p>\\s*", "<br>");
+            //content = content.replaceAll("<(p|span|div)[^>]*>\\s*(<br>|&nbsp;)*\\s*</(p|span|div)>", "<br>");
+
+            //content = Html.fromHtml(content).toString();
+
+            //Log.e(mTag, "결과\n" + content);
+            articleDetailData.setContent(content);
 
             //data.setThumbnails(thumbnails);
             //data.setTargets(images);
         }
 
-        return data;
+        //return articleDetailData;
+
+        parseComment(doc, commentList);
     }
 
-    public ArrayList<CommentData> parseComment(String response) {
-        /*
-        <a href="view.php?table=bestofbest&no=363965&page=1">
-            <div class="listLineBox list_tr_sisa" mn='754830'>
-                <div class="list_iconBox">
-                        <div class='board_icon_mini sisa' style='align-self:center'></div>
-                </div>
-                <div>
-                    <span class="list_no">363965</span>
-                    <span class="listDate">2017/09/22 11:45</span>
-                    <span class="list_writer" is_member="yes">carryon</span>
-                </div>
-                <div>
-                    <h2 class="listSubject" >네이버를 조져야됨..<span class="list_comment_count"> <span class="memo_count">[3]</span></span></h2>
-                </div>
-                <div>
-                    <span class="list_viewTitle">조회:</span><span class="list_viewCount">1374</span>	            <span class="list_okNokTitle">추천:</span><span class="list_okNokCount">53</span>
-                    <span class="list_iconWrap">
-                    </span>
-                </div>
-            </div>
-        </a>
-        */
+    /**
+     * 댓글 파싱하기
+     */
+    private void parseComment(Document doc, ArrayList<CommentData> commentList) {
+        Element root = doc.select(".comment_view_wrapper").first();
 
-        //Log.d(mTag, response);
+        for (Element div : root.select(".comment_view")) {
+            for (Element table : div.select(".comment_table")) {
+                for (Element tr : table.select(".comment_element")) {
+                    String content = "";
+                    boolean isBest = false;
+                    boolean isReply = false;
 
-        ArrayList<CommentData> dataList = new ArrayList<>();
+                    Element el;
 
-        if (response == null || response.isEmpty()) {
-            return dataList;
-        }
+                    el = tr.select("span.text").first();
+                    content = el.text();
 
-        try {
-            JSONObject jsonObject = new JSONObject(response);
+                    el = tr.select(".icon_best").first(); // 베스트 댓글인 경우
+                    //String bestString = "";
+                    if (el != null) {
+                        //bestString = "[베스트] ";
+                        isBest = true;
+                    }
+                    //content = bestString + content;
 
-            // Getting JSON Array node
-            JSONArray jsonArray = jsonObject.getJSONArray("memos");
+                    el = tr.select(".is_child").first(); // 댓글의 댓글인 경우
+                    String replyString = "";
+                    if (el != null) {
+                        replyString = "Re. ";
+                        isReply = true;
+                    }
+                    content = replyString + content;
 
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject obj = jsonArray.getJSONObject(i);
-
-                String content = obj.getString("memo");
-                content = content.replaceAll("<br />", "\n");
-
-                String recommend = obj.getString("ok");
-                int recommendCount = Integer.parseInt(recommend);
-                if (recommendCount < 10) {
-                    continue;
+                    CommentData commentData = new CommentData();
+                    commentData.setContent(content);
+                    commentData.setBest(isBest);
+                    commentData.setReply(isReply);
+                    commentList.add(commentData);
                 }
-
-                Log.d(mTag, content + " / 추천: " + recommend);
-
-                CommentData data = new CommentData();
-                data.setContent(content);
-                dataList.add(data);
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
-
-        return dataList;
     }
 }

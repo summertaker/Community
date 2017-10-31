@@ -86,8 +86,10 @@ public class TodayhumorParser extends BaseParser {
 
                 el = row.select(".list_okNokCount").first();
                 if (el != null) {
-                    recommendCount = el.text();
+                    recommendCount = " (+" + el.text() + ")";
                 }
+
+                title = title + recommendCount;
 
                 //Log.d(mTag, title + " / " + like);
 
@@ -135,6 +137,7 @@ public class TodayhumorParser extends BaseParser {
 
             ArrayList<MediaData> mediaDatas = new ArrayList<>();
 
+            /*
             // 이미지 태그 목록
             for (Element img : root.select("img")) {
                 String src = img.attr("src");
@@ -145,6 +148,7 @@ public class TodayhumorParser extends BaseParser {
 
                 addMediaData(mediaDatas, src, src, null);
             }
+            */
 
             // 비디오 태그 목록
             for (Element video : root.select("video")) {
@@ -162,7 +166,7 @@ public class TodayhumorParser extends BaseParser {
             content = content.replaceAll("<br\\s*.*>\\s*<br\\s*.*>\\s*<br\\s*.*>\\s*", "<br><br>");
             //Log.e(mTag, "결과\n" + content);
 
-            content = Html.fromHtml(content).toString();
+            //content = Html.fromHtml(content).toString();
 
             data.setContent(content);
         }

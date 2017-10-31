@@ -83,8 +83,8 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
     private LinearLayout.LayoutParams mTextParams;
     private RelativeLayout.LayoutParams mIconParams;
 
-    private ArticleDetailData mArticleDetailData;
-    private ArrayList<CommentData> mCommentDataList;
+    private ArticleDetailData mArticleDetailData = new ArticleDetailData();
+    private ArrayList<CommentData> mCommentDataList = new ArrayList<>();
 
     private String document_srl = "";
 
@@ -244,9 +244,9 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                 renderData();
             }
         } else if (url.contains("ruliweb.com")) {
-            // 루리웹 글 상세
+            // 루리웹 글 상세, 댓글
             RuliwebParser ruliwebParser = new RuliwebParser();
-            mArticleDetailData = ruliwebParser.parseDetail(response);
+            ruliwebParser.parseDetail(response, mArticleDetailData, mCommentDataList);
             renderData();
         }
     }
@@ -258,7 +258,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             int mediaTotal = mArticleDetailData.getMediaDatas().size();
 
             for (MediaData mediaData : mArticleDetailData.getMediaDatas()) {
-                crateImage(mediaData);
+                crateMediaData(mediaData);
 
                 if (mMediaCount >= 20 && mMediaCount < mediaTotal) { // 스마트폰 메모리 부족 에러 발생한다.
                     TextView tvPicture = findViewById(R.id.tvPicture);
@@ -345,23 +345,22 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
             TextView tvContent = findViewById(R.id.tvContent);
             tvContent.setVisibility(View.VISIBLE);
-            tvContent.setText(content);
+            //tvContent.setText(content);
 
-            /*
-            content = root.html(); -- 파서에서는 원본 HTML을 리턴하게 한다.
+            //content = root.html(); -- 파서에서는 원본 HTML을 리턴하게 한다.
 
             // https://medium.com/@rajeefmk/android-textview-and-image-loading-from-url-part-1-a7457846abb6
             Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleViewActivity.this, tvContent, content);
             ImageUtil.setClickListenerOnHtmlImageGetter(html, new ImageUtil.Callback() {
                 @Override
                 public void onImageClick(String imageUrl) {
-                    Log.e(mTag, "imageUrl: " + imageUrl);
+                    //Log.e(mTag, "imageUrl: " + imageUrl);
+                    viewImage(imageUrl);
                 }
             }, true);
 
             tvContent.setText(html);
             tvContent.setMovementMethod(LinkMovementMethod.getInstance());
-            */
         }
 
         // 댓글 로드하기
@@ -370,8 +369,10 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                     + mArticleDetailData.getTable() + "&parent_id="
                     + mArticleDetailData.getId() + "&is_mobile=Y";
             doStringRequest(url, Request.Method.GET);
+        } else if (mUrl.contains("ruliweb.com")) {
+            renderComment();
         } else if (mUrl.contains("theqoo.net")) {
-            String url = "http://theqoo.net/index.php"; //?act=dispBoardContentCommentListTheqoo&document_srl=" + document_srl + "&cpage=0";
+            //String url = "http://theqoo.net/index.php"; //?act=dispBoardContentCommentListTheqoo&document_srl=" + document_srl + "&cpage=0";
             //doJsonObjectRequest(url);
             mProgressBar.setVisibility(View.GONE);
         } else {
@@ -380,9 +381,9 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
     }
 
     /**
-     * ImageView 만들어서 이미지 출력하기
+     * ImageView 만들어서 이미지, 동영상 썸네일 출력하기
      */
-    private void crateImage(final MediaData mediaData) {
+    private void crateMediaData(final MediaData mediaData) {
         final String thumbnail = mediaData.getThumbnail();
         if (thumbnail == null || thumbnail.isEmpty()) {
             return;

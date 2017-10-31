@@ -5,6 +5,8 @@ public class CommentData {
     private String thumbnail;
     private String image;
     private String content;
+    private boolean isBest;
+    private boolean isReply;
 
     public CommentData() {
 
@@ -38,5 +40,21 @@ public class CommentData {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public boolean isBest() {
+        return isBest;
+    }
+
+    public void setBest(boolean best) {
+        isBest = best;
+    }
+
+    public boolean isReply() {
+        return isReply;
+    }
+
+    public void setReply(boolean reply) {
+        isReply = reply;
     }
 }
