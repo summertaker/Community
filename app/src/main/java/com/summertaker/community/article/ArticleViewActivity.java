@@ -1,16 +1,12 @@
 package com.summertaker.community.article;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.method.LinkMovementMethod;
-import android.text.style.ImageSpan;
-import android.text.style.URLSpan;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.Menu;
@@ -22,6 +18,7 @@ import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -35,8 +32,10 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
-import com.github.bluzwong.swipeback.SwipeBackActivityHelper;
+import com.hannesdorfmann.swipeback.Position;
+import com.hannesdorfmann.swipeback.SwipeBack;
 import com.squareup.picasso.Picasso;
 import com.summertaker.community.R;
 import com.summertaker.community.common.BaseActivity;
@@ -53,7 +52,6 @@ import com.summertaker.community.parser.TodayhumorParser;
 import com.summertaker.community.parser.TwitterParser;
 import com.summertaker.community.util.ExpandableHeightListView;
 import com.summertaker.community.util.ImageUtil;
-import com.summertaker.community.util.PicassoImageGetter;
 import com.summertaker.community.util.ProportionalImageView;
 
 import org.json.JSONException;
@@ -67,8 +65,9 @@ import java.util.regex.Pattern;
 
 public class ArticleViewActivity extends BaseActivity implements ArticleViewInterface {
 
+    private String mSection;
     private String mTitle;
-    private String mUrl = "";
+    private String mUrl;
 
     private ProgressBar mProgressBar;
     private ScrollView mScrollView;
@@ -88,14 +87,18 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
     private String document_srl = "";
 
-    SwipeBackActivityHelper helper = new SwipeBackActivityHelper();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.article_view_activity);
+
+        // Init the swipe back
+        SwipeBack.attach(this, Position.LEFT)
+                .setContentView(R.layout.article_view_activity)
+                .setSwipeBackView(R.layout.swipeback_custom);
+        //setContentView(R.layout.article_view_activity);
 
         Intent intent = getIntent();
+        mSection = intent.getStringExtra("section");
         mTitle = intent.getStringExtra("title");
         mUrl = intent.getStringExtra("url");
         //Log.e(mTag, "mUrl: " + mUrl);
@@ -109,9 +112,9 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             //Log.e(mTag, "document_srl: " + document_srl);
         }
 
-        setSwipeDetector(); // 스와이프 종료
+        //setSwipeDetector(); // 스와이프 종료
         setBaseStatusBar(); // 상태바 설정
-        setBaseToolbar(mTitle); // 툴바 설정
+        setBaseToolbar(mSection); // 툴바 설정
 
         mProgressBar = findViewById(R.id.toolbar_progress_bar);
         mProgressBar.setVisibility(View.VISIBLE);
@@ -148,6 +151,12 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         //mIconParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 
         doStringRequest(mUrl, Request.Method.GET);
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        overridePendingTransition(R.anim.swipeback_stack_to_front, R.anim.swipeback_stack_right_out);
     }
 
     @Override
@@ -189,9 +198,24 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
+                //SharedPreferences _preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                //String sessionId = _preferences.getString("sessionid", "");
+
                 HashMap<String, String> headers = new HashMap<>();
+
                 //headers.put("Content-Type", "application/json; charset=utf-8");
                 headers.put("User-agent", BaseApplication.getInstance().getMobileUserAgent());
+
+                //StringBuilder builder = new StringBuilder();
+                //builder.append("sessionid");
+                //builder.append("=");
+                //builder.append(sessionId);
+                //if (headers.containsKey("Cookie")) {
+                //    builder.append("; ");
+                //    builder.append(headers.get("Cookie"));
+                //}
+                headers.put("cmtimg", "1");
+
                 return headers;
             }
         };
@@ -256,6 +280,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
         if (mArticleDetailData.getMediaDatas() != null) {
             int mediaTotal = mArticleDetailData.getMediaDatas().size();
+            //Log.e(mTag, "mediaTotal: " + mediaTotal);
 
             for (MediaData mediaData : mArticleDetailData.getMediaDatas()) {
                 crateMediaData(mediaData);
@@ -343,24 +368,36 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                 view.setVisibility(View.VISIBLE);
             }
 
+            // 출처 출력하기
+            String source = mArticleDetailData.getSource();
+            if (source != null && !source.isEmpty()) {
+                TextView tvSource = findViewById(R.id.tvSource);
+                tvSource.setVisibility(View.VISIBLE);
+                String sourceText = (source.length() > 25) ? source.substring(0, 25) + "..." : source;
+                source = "출처: <a href=\"" + source + "\">" + sourceText + "</a>";
+                tvSource.setText(Html.fromHtml(source));
+            }
+
             TextView tvContent = findViewById(R.id.tvContent);
             tvContent.setVisibility(View.VISIBLE);
-            //tvContent.setText(content);
 
-            //content = root.html(); -- 파서에서는 원본 HTML을 리턴하게 한다.
+            if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+                //content = root.html(); -- 파서에서는 원본 HTML을 리턴하게 한다.
 
-            // https://medium.com/@rajeefmk/android-textview-and-image-loading-from-url-part-1-a7457846abb6
-            Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleViewActivity.this, tvContent, content);
-            ImageUtil.setClickListenerOnHtmlImageGetter(html, new ImageUtil.Callback() {
-                @Override
-                public void onImageClick(String imageUrl) {
-                    //Log.e(mTag, "imageUrl: " + imageUrl);
-                    viewImage(imageUrl);
-                }
-            }, true);
-
-            tvContent.setText(html);
-            tvContent.setMovementMethod(LinkMovementMethod.getInstance());
+                // https://medium.com/@rajeefmk/android-textview-and-image-loading-from-url-part-1-a7457846abb6
+                Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleViewActivity.this, tvContent, content);
+                ImageUtil.setClickListenerOnHtmlImageGetter(html, new ImageUtil.Callback() {
+                    @Override
+                    public void onImageClick(String imageUrl) {
+                        //Log.e(mTag, "imageUrl: " + imageUrl);
+                        viewImage(imageUrl);
+                    }
+                }, true);
+                tvContent.setText(html);
+                tvContent.setMovementMethod(LinkMovementMethod.getInstance()); // URL 클릭 시 이동
+            } else {
+                tvContent.setText(content);
+            }
         }
 
         // 댓글 로드하기
@@ -388,7 +425,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         if (thumbnail == null || thumbnail.isEmpty()) {
             return;
         }
-        //Log.e(mTag, "thumbnail: " + thumbnail);
+        //Log.e(mTag, "crateMediaData.thumbnail: " + thumbnail);
 
         final ProportionalImageView iv = new ProportionalImageView(this);
 
@@ -466,6 +503,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                                 @Override
                                 public void onError() {
                                     //Log.e(mTag, "Piccaso.onError(): " + thumbnail);
+                                    Toast.makeText(getApplicationContext(), "Piccaso.onError()...", Toast.LENGTH_LONG).show();
                                 }
                             });
                         }
@@ -490,29 +528,55 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             if (thumbnail.toLowerCase().contains(".gif")) {
                 Glide.with(this).asGif().load(thumbnail).listener(new RequestListener<GifDrawable>() {
                     @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<GifDrawable> target, boolean isFirstResource) {
-                        Log.e(mTag, "Glide.onLoadFailed(): " + thumbnail);
+                    public boolean onResourceReady(GifDrawable resource, Object model, Target<GifDrawable> target, DataSource dataSource, boolean isFirstResource) {
                         return false;
                     }
 
                     @Override
-                    public boolean onResourceReady(GifDrawable resource, Object model, Target<GifDrawable> target, DataSource dataSource, boolean isFirstResource) {
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<GifDrawable> target, boolean isFirstResource) {
+                        //Log.e(mTag, "Glide.onLoadFailed(): " + thumbnail);
+                        String msg = "Glide.onLoadFailed()...";
+                        if (e != null) {
+                            msg += "\n" + e.getLocalizedMessage();
+                        }
+                        Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                         return false;
                     }
                 }).into(iv);
             } else {
-                //Glide.with(this).load(thumbnail).into(iv);
+                Glide.with(this).load(thumbnail).apply(new RequestOptions()
+                                .placeholder(R.drawable.placeholder)
+                        //.dontAnimate()
+                        //.dontTransform()
+                ).into(iv);
+
+                /*
+                // Picasso: 용량 큰 이미지 로드 시 ImageView가 공백으로 표시됨
+                // https://stackoverflow.com/questions/23740307/load-large-images-with-picasso-and-custom-transform-object
+                int MAX_WIDTH = 240;
+                int MAX_HEIGHT = 320;
+                final Bitmap image;
+                try {
+                    image = Picasso.with(this).load("http://").get();
+                    int width = image.getWidth();
+                    int height = image.getHeight();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 Picasso.with(this).load(thumbnail).into(iv, new com.squareup.picasso.Callback() {
                     @Override
                     public void onSuccess() {
-                        //Log.e(mTag, "Piccaso.onSuccess(): " + thumbnail);
+                        Log.e(mTag, "Piccaso.onSuccess(): " + thumbnail);
                     }
 
                     @Override
                     public void onError() {
                         Log.e(mTag, "Piccaso.onError(): " + thumbnail);
+                        Toast.makeText(getApplicationContext(), "Piccaso.onError()...", Toast.LENGTH_LONG).show();
                     }
                 });
+                */
             }
         }
 
@@ -569,7 +633,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
     @Override
     public void onPictureClick(int position) {
         CommentData data = mCommentDataList.get(position);
-        viewImage(data.getImage());
+        viewImage(data.getUrl());
     }
 
     @Override

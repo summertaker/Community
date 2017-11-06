@@ -3,7 +3,7 @@ package com.summertaker.community.data;
 public class CommentData {
 
     private String thumbnail;
-    private String image;
+    private String url;
     private String content;
     private boolean isBest;
     private boolean isReply;
@@ -12,9 +12,9 @@ public class CommentData {
 
     }
 
-    public CommentData(String thumbnail, String image, String content) {
+    public CommentData(String thumbnail, String url, String content) {
         this.thumbnail = thumbnail;
-        this.image = image;
+        this.url = url;
         this.content = content;
     }
 
@@ -26,12 +26,12 @@ public class CommentData {
         this.thumbnail = thumbnail;
     }
 
-    public String getImage() {
-        return image;
+    public String getUrl() {
+        return url;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setUrl(String url) {
+        this.url = url;
     }
 
     public String getContent() {

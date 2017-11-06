@@ -7,9 +7,13 @@
     <string name="action_share">공유</string>
     <string name="app_name">Community</string>
     <string name="apply">적용하기</string>
+    <string name="close">닫기</string>
     <string name="comment">댓글</string>
     <string name="download">다운로드</string>
     <string name="copyright">summertaker@gmail.com</string>
+    <string name="error_generic_server_down">generic_server_down</string>
+    <string name="error_no_internet">no_internet</string>
+    <string name="error_generic_error">generic_error</string>
     <string name="finish">완료</string>
     <string name="loading">로드 중&#8230;</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -18,13 +22,12 @@
     <string name="ok">예</string>
     <string name="page">페이지</string>
     <string name="recommended_comment">추천 댓글</string>
+    <string name="settings_use_image_getter">ImageGetter 사용</string>
     <string name="site">사이트</string>
+
     <string name="title_activity_article_view">ArticleViewActivity</string>
     <string name="title_activity_web">WebActivity</string>
     <string name="title_activity_image_view">ImageViewActivity</string>
     <string name="title_activity_download">DownloadActivity</string>
-
-    <string name="generic_server_down">generic_server_down</string>
-    <string name="no_internet">no_internet</string>
-    <string name="generic_error">generic_error</string>
+    <string name="title_activity_settings">Settings</string>
 </resources>

@@ -8,6 +8,7 @@ public class ArticleDetailData {
     private String date;
     private String url;
     private String content;
+    private String source;
     private ArrayList<MediaData> mediaDatas;
     private ArrayList<String> outLinks;
     private String table;
@@ -42,6 +43,14 @@ public class ArticleDetailData {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getSource() {
+        return source;
+    }
+
+    public void setSource(String source) {
+        this.source = source;
     }
 
     public String getDate() {

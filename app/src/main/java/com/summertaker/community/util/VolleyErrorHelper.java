@@ -30,13 +30,13 @@ public class VolleyErrorHelper {
      */
     public static String getMessage(Object error, Context context) {
         if (error instanceof TimeoutError) {
-            return context.getResources().getString(R.string.generic_server_down);
+            return context.getResources().getString(R.string.error_generic_server_down);
         } else if (isServerProblem(error)) {
             return handleServerError(error, context);
         } else if (isNetworkProblem(error)) {
-            return context.getResources().getString(R.string.no_internet);
+            return context.getResources().getString(R.string.error_no_internet);
         }
-        return context.getResources().getString(R.string.generic_error);
+        return context.getResources().getString(R.string.error_generic_error);
     }
 
     /**
@@ -95,9 +95,9 @@ public class VolleyErrorHelper {
                     return error.getMessage();
 
                 default:
-                    return context.getResources().getString(R.string.generic_server_down);
+                    return context.getResources().getString(R.string.error_generic_server_down);
             }
         }
-        return context.getResources().getString(R.string.generic_error);
+        return context.getResources().getString(R.string.error_generic_error);
     }
 }

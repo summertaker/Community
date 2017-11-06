@@ -11,11 +11,20 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.WindowManager;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.resource.gif.GifDrawable;
+import com.bumptech.glide.request.RequestOptions;
+import com.bumptech.glide.request.target.SimpleTarget;
+import com.bumptech.glide.request.transition.Transition;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.summertaker.community.R;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 
 public class PicassoImageGetter implements Html.ImageGetter {
 
@@ -34,10 +43,13 @@ public class PicassoImageGetter implements Html.ImageGetter {
     @Override
     public Drawable getDrawable(String source) {
         BitmapDrawablePlaceHolder drawable = new BitmapDrawablePlaceHolder();
-        Picasso.with(mContext)
-                .load(source)
-                .placeholder(R.drawable.placeholder)
-                .into(drawable);
+        if (source != null && !source.isEmpty()) {
+            if (source.toLowerCase().contains(".gif")) {
+                //Glide.with(mContext).load(source).apply(new RequestOptions().placeholder(R.drawable.placeholder)).into(drawable);
+            } else {
+                Picasso.with(mContext).load(source).placeholder(R.drawable.placeholder).into(drawable);
+            }
+        }
         return drawable;
     }
 

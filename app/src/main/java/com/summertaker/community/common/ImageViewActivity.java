@@ -7,6 +7,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ImageView;
 
+import com.bumptech.glide.Glide;
 import com.squareup.picasso.Picasso;
 import com.summertaker.community.R;
 
@@ -40,7 +41,8 @@ public class ImageViewActivity extends BaseActivity {
 
         // https://github.com/jsibbold/zoomage
         ImageView ivPicture = findViewById(R.id.ivPicture);
-        Picasso.with(this).load(url).into(ivPicture);
+        Glide.with(this).load(url).into(ivPicture);
+        //Picasso.with(this).load(url).into(ivPicture);
     }
 
     private class WebViewClientClass extends WebViewClient {

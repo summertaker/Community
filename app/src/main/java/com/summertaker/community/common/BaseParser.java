@@ -26,7 +26,7 @@ public class BaseParser {
         //------------------------------------------------
         // 유튜브 URL 목록 (1)
         //------------------------------------------------
-        String regex = "https\\://www\\.youtube\\.com/watch\\?v=([_|\\w]+)"; // \\w : 알파벳이나 숫자
+        String regex = "https\\://www\\.youtube\\.com/watch\\?v=([_|\\-|\\w]+)"; // \\w : 알파벳이나 숫자
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(content);   // get a matcher object
         while (matcher.find()) {
@@ -34,35 +34,82 @@ public class BaseParser {
             //Log.e(mTag, "url: " + url);
 
             String id = matcher.group(1);
-            String thumbnail = "https://img.youtube.com/vi/" + id + "/0.jpg";
-            //Log.e(mTag, "thumbnail: " + thumbnail);
+            String src = "https://img.youtube.com/vi/" + id + "/0.jpg";
+            //Log.e(mTag, "thumbnail: " + src);
 
-            addMediaData(mediaDatas, thumbnail, null, url);
+            if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+                String search = "<iframe[^>|.]*src=\"" + regex + "\"[^>|.]*></iframe>";
+                String replace = "<a href=\"https://m.youtube.com/watch?v=" + id + "\"><img src=\"" + src + "\"></a> <small><font color=\"#888888\">Youtube</font></small>";
+                content = content.replaceAll(search, replace);
+            } else {
+                addMediaData(mediaDatas, src, null, url);
+            }
         }
 
         for (Element iframe : root.select("iframe")) {
             String url = iframe.attr("src");
             //Log.e(mTag, "url: " + url);
 
-            regex = "https\\://www\\.youtube\\.com/embed/([_|\\w]+)"; // \\w : 알파벳이나 숫자
+            regex = "https\\://www\\.youtube\\.com/embed/([_|\\-|\\w]+)"; // \\w : 알파벳이나 숫자
             pattern = Pattern.compile(regex);
             matcher = pattern.matcher(url);   // get a matcher object
+
             while (matcher.find()) {
                 String id = matcher.group(1);
-                String thumbnail = "https://img.youtube.com/vi/" + id + "/0.jpg";
-                //Log.e(mTag, "thumbnail: " + thumbnail);
+                String src = "https://img.youtube.com/vi/" + id + "/0.jpg";
+                //Log.e(mTag, "src: " + src);
 
-                addMediaData(mediaDatas, thumbnail, null, url);
+                if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+                    String search = "<iframe[^>|.]*src=\"" + regex + "\"[^>|.]*></iframe>";
+                    String replace = "<a href=\"https://m.youtube.com/watch?v=" + id + "\"><img src=\"" + src + "\"></a> <small><font color=\"#888888\">Youtube</font></small>";
+                    content = content.replaceAll(search, replace);
+                } else {
+                    addMediaData(mediaDatas, src, null, url);
+                    content = content.replace(iframe.outerHtml(), "");
+                }
             }
         }
     }
 
-    protected void addMediaData(ArrayList<MediaData> mediaDatas, String thumbnail, String image, String url) {
-        MediaData mediaData = new MediaData();
-        mediaData.setThumbnail(thumbnail);
-        mediaData.setImage(image);
-        mediaData.setUrl(url);
+    protected String getYoutubeHtml(String content) {
+        String result = content;
 
-        mediaDatas.add(mediaData);
+        // 유튜브 IFRAME
+        // <iframe width="700" height="450" src="https://www.youtube.com/embed/rrRDXIenadI?list=WL" frameborder="0"></iframe>
+        String regex = "https\\://www\\.youtube\\.com/embed/([_|\\-|\\w]+)"; // \\w : 알파벳이나 숫자
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(result);   // get a matcher object
+        while (matcher.find()) {
+            String id = matcher.group(1);
+            String src = "https://img.youtube.com/vi/" + id + "/0.jpg";
+            //Log.e(mTag, "src: " + src);
+
+            String search = "<iframe[^>|.]*src=\"" + regex + "\"[^>|.]*></iframe>";
+            String replace = "<a href=\"https://m.youtube.com/watch?v=" + id + "\"><img src=\"" + src + "\"></a> <small><font color=\"#888888\">Youtube</font></small>";
+            result = result.replaceAll(search, replace);
+        }
+        return result;
+    }
+
+    protected void addMediaData(ArrayList<MediaData> mediaDatas, String thumbnail, String image, String url) {
+        boolean isExist = false;
+
+        if (url != null) {
+            for (MediaData md : mediaDatas) {
+                if (md.getUrl() != null && url.equals(md.getUrl())) {
+                    isExist = true;
+                    break;
+                }
+            }
+        }
+
+        if (!isExist) {
+            MediaData mediaData = new MediaData();
+            mediaData.setThumbnail(thumbnail);
+            mediaData.setImage(image);
+            mediaData.setUrl(url);
+
+            mediaDatas.add(mediaData);
+        }
     }
 }

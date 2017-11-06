@@ -1,9 +1,11 @@
 package com.summertaker.community.common;
 
 import android.app.Application;
+import android.content.SharedPreferences;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 
 import com.android.volley.Request;
@@ -12,6 +14,8 @@ import com.android.volley.toolbox.Volley;
 import com.summertaker.community.data.SiteData;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 public class BaseApplication extends Application {
@@ -27,10 +31,14 @@ public class BaseApplication extends Application {
 
     private List<SiteData> mSiteList;
 
+    public boolean SETTINGS_USE_IMAGE_GETTER = false;
+
     @Override
     public void onCreate() {
         super.onCreate();
         mInstance = this;
+
+        loadSettings();
 
         USER_AGENT_WEB = "Mozilla/5.0 (Macintosh; U; Mac OS X 10_6_1; en-US) ";
         USER_AGENT_WEB += "AppleWebKit/530.5 (KHTML, like Gecko) ";
@@ -42,12 +50,14 @@ public class BaseApplication extends Application {
 
         mSiteList = new ArrayList<>();
 
-        mSiteList.add(new SiteData("베오베", USER_AGENT_MOBILE, "http://m.todayhumor.co.kr/list.php?table=bestofbest", "&page="));
+        mSiteList.add(new SiteData("오유베오베", USER_AGENT_MOBILE, "http://m.todayhumor.co.kr/list.php?table=bestofbest", "&page="));
 
-        //mSiteList.add(new SiteData("루리웹힛갤", USER_AGENT_MOBILE, "http://m.ruliweb.com/best/selection", "?page=", 10));
-        mSiteList.add(new SiteData("루리웹PC", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1003/list", "?page="));
-        mSiteList.add(new SiteData("루리웹모바일", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1004/list", "?page="));
-        mSiteList.add(new SiteData("루리웹콘솔", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1001/list", "?page="));
+        //mSiteList.add(new SiteData("루리웹베스트", USER_AGENT_MOBILE, "http://m.ruliweb.com/best", "?page="));
+        mSiteList.add(new SiteData("루리웹힛갤", USER_AGENT_MOBILE, "http://m.ruliweb.com/best/selection", "?page="));
+        mSiteList.add(new SiteData("루리웹사정경", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/300018/list", "?page="));
+        //mSiteList.add(new SiteData("루리웹PC", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1003/list", "?page="));
+        //mSiteList.add(new SiteData("루리웹모바일", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1004/list", "?page="));
+        //mSiteList.add(new SiteData("루리웹콘솔", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1001/list", "?page="));
 
         mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
         mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
@@ -106,5 +116,17 @@ public class BaseApplication extends Application {
 
     public SiteData getSiteData(int position) {
         return mSiteList.get(position);
+    }
+
+    public void loadSettings() {
+        SharedPreferences prefs = getSharedPreferences(getApplicationContext().getPackageName(), MODE_PRIVATE);
+        SETTINGS_USE_IMAGE_GETTER = prefs.getBoolean("USE_IMAGE_GETTER", false); //키값, 디폴트값
+    }
+
+    public void saveSettings() {
+        SharedPreferences pref =getSharedPreferences(getApplicationContext().getPackageName(), MODE_PRIVATE);
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putBoolean("USE_IMAGE_GETTER", BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER);
+        editor.apply();
     }
 }

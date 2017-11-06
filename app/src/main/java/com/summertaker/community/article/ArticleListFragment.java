@@ -3,6 +3,7 @@ package com.summertaker.community.article;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -36,6 +37,7 @@ import java.util.Map;
 
 public class ArticleListFragment extends Fragment implements ArticleListInterface {
 
+    private Context mContext;
     private String mTag = "== " + this.getClass().getSimpleName();
     private String mVolleyTag = this.getClass().getSimpleName();
 
@@ -97,6 +99,8 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
         //mPbLoading = rootView.findViewById(R.id.pbLoading);
         //mLoLoadMore = rootView.findViewById(R.id.loLoadMore);
 
+        mContext = getContext().getApplicationContext();
+
         mArticleList = new ArrayList<>();
         mAdapter = new ArticleListAdapter(getContext(), mArticleList);
 
@@ -105,9 +109,10 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
 
         mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                ArticleListData data = (ArticleListData) adapterView.getItemAtPosition(i);
+            public void onItemClick(AdapterView<?> adapterView, View view, int pos, long id) {
+                ArticleListData data = (ArticleListData) adapterView.getItemAtPosition(pos);
 
+                String section = mSiteData.getTitle();
                 String title = data.getTitle();
                 String url = data.getUrl();
 
@@ -126,11 +131,37 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
                 // https://stackoverflow.com/questions/27788195/setprogressbarindeterminatevisibilitytrue-not-working
                 Intent intent = new Intent(getActivity(), ArticleViewActivity.class);
 
+                intent.putExtra("section", section);
                 intent.putExtra("title", title);
                 intent.putExtra("url", url);
                 startActivity(intent);
                 //startActivityForResult(intent, 100);
                 //getActivity().overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
+            }
+        });
+
+        // mListView.setLongClickable(true); // in XML
+        mListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> adapterView, View view, int pos, long id) {
+                //Log.e("long clicked","pos: " + pos);
+
+                ArticleListData data = (ArticleListData) adapterView.getItemAtPosition(pos);
+                String title = data.getTitle();
+                String url = data.getUrl();
+
+                //Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                //shareIntent.setType("text/plain");
+                //shareIntent.putExtra(Intent.EXTRA_TEXT, url);
+                //startActivity(Intent.createChooser(shareIntent, title));
+
+                Intent shareIntent = new Intent();
+                shareIntent.setType("text/plain");
+                shareIntent.setPackage("com.ideashower.readitlater");
+                shareIntent.putExtra(Intent.EXTRA_TEXT, url);
+                startActivity(Intent.createChooser(shareIntent, title));
+
+                return true;
             }
         });
 

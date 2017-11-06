@@ -3,15 +3,13 @@ package com.summertaker.community.parser;
 import android.text.Html;
 import android.util.Log;
 
+import com.summertaker.community.common.BaseApplication;
 import com.summertaker.community.common.BaseParser;
 import com.summertaker.community.data.ArticleDetailData;
 import com.summertaker.community.data.ArticleListData;
 import com.summertaker.community.data.CommentData;
 import com.summertaker.community.data.MediaData;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -59,12 +57,13 @@ public class RuliwebParser extends BaseParser {
                 String commentCount = "";
                 String recommendCount = "";
                 String url = "";
+                boolean isNotice = false;
 
                 Element el;
 
-                el = row.select("a.cate_label").first();
-                if (el == null) {
-                    continue; // 공지사항은 출력하지 않는다.
+                el = row.select("strong").first(); // 공지사항
+                if (el != null) {
+                    isNotice = true;
                 }
 
                 el = row.select("a.subject_link").first();
@@ -72,19 +71,18 @@ public class RuliwebParser extends BaseParser {
                     continue;
                 }
                 title = el.text();
-                //title = title.replaceAll("[0-9]", "").replace("[]", "");
-
-                //Element a = row; //row.select("a").first();
                 url = el.attr("href");
 
                 //Log.d(mTag, title + " / " + like);
 
-                ArticleListData data = new ArticleListData();
-                data.setTitle(title);
-                data.setCommentCount(commentCount);
-                data.setRecommendCount(recommendCount);
-                data.setUrl(url);
-                dataList.add(data);
+                if (!isNotice) {
+                    ArticleListData data = new ArticleListData();
+                    data.setTitle(title);
+                    data.setCommentCount(commentCount);
+                    data.setRecommendCount(recommendCount);
+                    data.setUrl(url);
+                    dataList.add(data);
+                }
             }
         }
     }
@@ -102,66 +100,59 @@ public class RuliwebParser extends BaseParser {
         //ArticleDetailData articleDetailData = new ArticleDetailData();
 
         if (root != null) {
-            Element el;
 
             // 원본 출처
-            String sourceHtml = "";
-            el = root.select(".source_url").first();
-            if (el != null) {
-                Element a = el.select("a").first();
-                String url = a.attr("href");
-                String urlString = (url.length() > 25) ? url.substring(0, 25) + "..." : url;
-                sourceHtml = "<p>출처: <a href=\"" + url + "\">" + urlString + "</a></p>";
+            String sourceUrl = "";
+            Element source = root.select(".source_url").first();
+            if (source != null) {
+                Element a = source.select("a").first();
+                sourceUrl = a.attr("href");
             }
+            Log.e(mTag, "source:" + sourceUrl);
+            articleDetailData.setSource(sourceUrl);
 
             // 본문 내용
-            el = root.select(".view_content").first();
+            root = root.select(".view_content").first();
 
-            String content = el.html();
+            String content = root.html();
             Log.e(mTag, "원본\n" + content);
 
-            content = content.replaceAll("src=\"//", "src=\"http://");
+            content = content.replaceAll("src=\"//", "src=\"http://"); // 이미지 URL 처리
 
-            content = sourceHtml + content;
+            if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+                // H1, H2, H3 ... 글자 크기 리셋
+                content = content.replaceAll("<h\\d[^>|.]*>", "<p>");
+                content = content.replaceAll("</h\\d>", "</p>");
 
-            ArrayList<MediaData> mediaDatas = new ArrayList<>();
+                // 공백 제거하기
+                content = content.replaceAll("\\s*&nbsp;\\s*", "");
+                content = content.replaceAll("<p[^>|.]*>\\s*(<br>)*\\s*</p>", "");
+                content = content.replaceAll("</p>\\s*<br>", "</p>");
+            } else {
+                ArrayList<MediaData> mediaDatas = new ArrayList<>();
 
-            /*
-            //---------------------
-            // 이미지 태그 목록
-            //---------------------
-            //int imgCount = 0;
-            for (Element el : root.select("img")) {
-                String src = el.attr("src");
-                //Log.e(mTag, src);
+                // 이미지 태그 목록
+                for (Element el : root.select("img")) {
+                    String src = el.attr("src");
+                    //Log.e(mTag, "img.src: " + src);
 
-                src = "http:" + src;
+                    content = content.replace(el.outerHtml(), "");
 
-                addMediaData(mediaDatas, src, src, null);
+                    addMediaData(mediaDatas, src, src, null);
+                }
+
+                parseYoutube(root, content, mediaDatas);
+
+                articleDetailData.setMediaDatas(mediaDatas);
+
+                content = Html.fromHtml(content).toString().trim();
+                //content = content.replaceAll("\\s\\s", " ");
             }
-            */
-
-            //--------------------------------------
-            // 유튜브 썸네일 사진과 링크 파싱하기
-            //--------------------------------------
-            parseYoutube(root, content, mediaDatas);
-
-            articleDetailData.setMediaDatas(mediaDatas);
-
-            //content = content.replaceAll("<img.+?>", "");
-            //content = content.replaceAll("\\s*<p\\s*(.|\")*>\\s*</p>\\s*", "<br>");
-            //content = content.replaceAll("<(p|span|div)[^>]*>\\s*(<br>|&nbsp;)*\\s*</(p|span|div)>", "<br>");
-
-            //content = Html.fromHtml(content).toString();
 
             //Log.e(mTag, "결과\n" + content);
+
             articleDetailData.setContent(content);
-
-            //data.setThumbnails(thumbnails);
-            //data.setTargets(images);
         }
-
-        //return articleDetailData;
 
         parseComment(doc, commentList);
     }
@@ -170,43 +161,66 @@ public class RuliwebParser extends BaseParser {
      * 댓글 파싱하기
      */
     private void parseComment(Document doc, ArrayList<CommentData> commentList) {
-        Element root = doc.select(".comment_view_wrapper").first();
+        Element root = doc.select(".comment_table").first();
+        //Log.e(mTag, "root.html(): " + root.html());
 
-        for (Element div : root.select(".comment_view")) {
-            for (Element table : div.select(".comment_table")) {
-                for (Element tr : table.select(".comment_element")) {
-                    String content = "";
-                    boolean isBest = false;
-                    boolean isReply = false;
+        if (root != null) {
+            //for (Element div : root.select(".comment_view")) {
+            //    for (Element table : div.select(".comment_table")) {
+            for (Element tr : root.select(".comment_element")) {
+                String content = "";
+                boolean isBest = false;
+                boolean isReply = false;
+                String recommend = "";
 
-                    Element el;
+                //Log.e(mTag, "원본\n" + tr.html());
 
-                    el = tr.select("span.text").first();
-                    content = el.text();
+                Element el;
 
-                    el = tr.select(".icon_best").first(); // 베스트 댓글인 경우
-                    //String bestString = "";
-                    if (el != null) {
-                        //bestString = "[베스트] ";
-                        isBest = true;
-                    }
-                    //content = bestString + content;
+                el = tr.select("span.text").first();
+                content = el.text();
+                //Log.e(mTag, "content: " + content);
 
-                    el = tr.select(".is_child").first(); // 댓글의 댓글인 경우
-                    String replyString = "";
-                    if (el != null) {
-                        replyString = "Re. ";
-                        isReply = true;
-                    }
-                    content = replyString + content;
-
-                    CommentData commentData = new CommentData();
-                    commentData.setContent(content);
-                    commentData.setBest(isBest);
-                    commentData.setReply(isReply);
-                    commentList.add(commentData);
+                el = tr.select(".icon_best").first(); // 베스트 댓글인 경우
+                //String bestString = "";
+                if (el != null) {
+                    //bestString = "[베스트] ";
+                    isBest = true;
                 }
+                //content = bestString + content;
+
+                el = tr.select(".btn_like").first();
+                el = el.select(".num").first();
+                if (el != null) {
+                    if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+                        recommend = " <font color=\"#888888\">(+" + el.text() + ")</font>";
+                    } else {
+                        recommend = " (+" + el.text() + ")";
+                    }
+                }
+
+                el = tr.select(".comment_img").first();
+                if (el != null) {
+                    Log.e(mTag, "img.src: " + el.attr("src"));
+                }
+
+                el = tr.select(".is_child").first(); // 댓글의 댓글인 경우
+                String replyString = "";
+                if (el != null) {
+                    replyString = "Re. ";
+                    isReply = true;
+                }
+                content = replyString + content + recommend;
+
+                CommentData data = new CommentData();
+                data.setContent(content);
+                data.setBest(isBest);
+                data.setReply(isReply);
+                data.setUrl("");
+                commentList.add(data);
             }
+            //    }
+            //}
         }
     }
 }

@@ -1,7 +1,6 @@
 package com.summertaker.community;
 
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
@@ -11,19 +10,15 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ProgressBar;
 
 import com.summertaker.community.article.ArticleListFragment;
 import com.summertaker.community.common.BaseActivity;
 import com.summertaker.community.common.BaseApplication;
 import com.summertaker.community.util.SlidingTabLayout;
-
-import java.io.File;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener, ArticleListFragment.ArticleListFragmentListener {
@@ -114,14 +109,9 @@ public class MainActivity extends BaseActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
+        if (id == R.id.nav_settings) {
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
         } else if (id == R.id.nav_share) {
 
         } else if (id == R.id.nav_send) {
@@ -130,7 +120,10 @@ public class MainActivity extends BaseActivity
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
-        return true;
+
+        // https://stackoverflow.com/questions/34352939/issue-to-remove-navigationview-menu-item-selected-color
+        //return true; // 선택된 항목이 반전된 상태로 유지되도록 하기
+        return false;
     }
 
     @Override
