@@ -43,6 +43,8 @@ public class PicassoImageGetter implements Html.ImageGetter {
     @Override
     public Drawable getDrawable(String source) {
         BitmapDrawablePlaceHolder drawable = new BitmapDrawablePlaceHolder();
+        //drawable.setDrawable(mContext.getDrawable(R.drawable.placeholder));
+
         if (source != null && !source.isEmpty()) {
             if (source.toLowerCase().contains(".gif")) {
                 //Glide.with(mContext).load(source).apply(new RequestOptions().placeholder(R.drawable.placeholder)).into(drawable);
@@ -70,25 +72,9 @@ public class PicassoImageGetter implements Html.ImageGetter {
             int width = drawable.getIntrinsicWidth();
             int height = drawable.getIntrinsicHeight();
 
-            /*
-            DisplayMetrics displayMetrics = mContext.getResources().getDisplayMetrics();
-            float dpHeight = displayMetrics.heightPixels / displayMetrics.density;
-            float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
-            width = (int) dpWidth;
-            */
-
-            /*
-            int margin = (int) mContext.getResources().getDimension(R.dimen.activity_margin);
-            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
-            Display display = wm.getDefaultDisplay();
-            Point size = new Point();
-            display.getSize(size);
-            width = size.x - (margin * 2);
-            height = size.y;
-            */
-
             drawable.setBounds(0, 0, width, height);
             setBounds(0, 0, width, height);
+
             if (mTextView != null) {
                 mTextView.setText(mTextView.getText());
             }
@@ -96,8 +82,23 @@ public class PicassoImageGetter implements Html.ImageGetter {
 
         @Override
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            //Log.e("", "onBitmapLoaded()....");
             setDrawable(new BitmapDrawable(mContext.getResources(), bitmap));
+
+            WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
+            if (wm != null) {
+                Display display = wm.getDefaultDisplay();
+                Point size = new Point();
+                display.getSize(size);
+                int width = size.x;
+                //int height = size.y;
+                int height = (size.x / bitmap.getWidth()) * bitmap.getHeight();
+
+                //Log.e(">>>", "screen: width: " + size.x + ", height: " + size.y);
+                //Log.e(">>>", "bitmap: width: " + bitmap.getWidth() + ", height: " + bitmap.getHeight());
+
+                drawable.setBounds(0, 0, width, height);
+                setBounds(0, 0, width, height);
+            }
         }
 
         @Override

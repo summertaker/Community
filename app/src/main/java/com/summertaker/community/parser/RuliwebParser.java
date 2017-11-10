@@ -108,14 +108,14 @@ public class RuliwebParser extends BaseParser {
                 Element a = source.select("a").first();
                 sourceUrl = a.attr("href");
             }
-            Log.e(mTag, "source:" + sourceUrl);
+            //Log.e(mTag, "source:" + sourceUrl);
             articleDetailData.setSource(sourceUrl);
 
             // 본문 내용
             root = root.select(".view_content").first();
 
             String content = root.html();
-            Log.e(mTag, "원본\n" + content);
+            //Log.e(mTag, "원본\n" + content);
 
             content = content.replaceAll("src=\"//", "src=\"http://"); // 이미지 URL 처리
 

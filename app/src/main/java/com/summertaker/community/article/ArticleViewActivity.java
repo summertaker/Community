@@ -1,6 +1,7 @@
 package com.summertaker.community.article;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -65,7 +66,6 @@ import java.util.regex.Pattern;
 
 public class ArticleViewActivity extends BaseActivity implements ArticleViewInterface {
 
-    private String mSection;
     private String mTitle;
     private String mUrl;
 
@@ -90,15 +90,15 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.article_view_activity);
 
         // Init the swipe back
         SwipeBack.attach(this, Position.LEFT)
                 .setContentView(R.layout.article_view_activity)
                 .setSwipeBackView(R.layout.swipeback_custom);
-        //setContentView(R.layout.article_view_activity);
 
         Intent intent = getIntent();
-        mSection = intent.getStringExtra("section");
+        String section = intent.getStringExtra("section");
         mTitle = intent.getStringExtra("title");
         mUrl = intent.getStringExtra("url");
         //Log.e(mTag, "mUrl: " + mUrl);
@@ -114,7 +114,8 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
         //setSwipeDetector(); // 스와이프 종료
         setBaseStatusBar(); // 상태바 설정
-        setBaseToolbar(mSection); // 툴바 설정
+        setBaseToolbar(section); // 툴바 설정
+
 
         mProgressBar = findViewById(R.id.toolbar_progress_bar);
         mProgressBar.setVisibility(View.VISIBLE);
@@ -147,13 +148,14 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         mRelativeParamsNoMargin = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
 
         mTextParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        mTextParams.setMargins(0, margin, 0, 0);
         mIconParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         //mIconParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 
         doStringRequest(mUrl, Request.Method.GET);
     }
 
-    @Override
+    //@Override
     public void onBackPressed() {
         super.onBackPressed();
         overridePendingTransition(R.anim.swipeback_stack_to_front, R.anim.swipeback_stack_right_out);
@@ -369,13 +371,20 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             }
 
             // 출처 출력하기
-            String source = mArticleDetailData.getSource();
+            final String source = mArticleDetailData.getSource();
             if (source != null && !source.isEmpty()) {
                 TextView tvSource = findViewById(R.id.tvSource);
                 tvSource.setVisibility(View.VISIBLE);
-                String sourceText = (source.length() > 25) ? source.substring(0, 25) + "..." : source;
-                source = "출처: <a href=\"" + source + "\">" + sourceText + "</a>";
-                tvSource.setText(Html.fromHtml(source));
+                int maxLen = 36;
+                String sourceHtml = (source.length() > maxLen) ? source.substring(0, maxLen - 3) + "..." : source;
+                sourceHtml = "출처: <a href=\"" + source + "\">" + sourceHtml + "</a>";
+                tvSource.setText(Html.fromHtml(sourceHtml));
+                tvSource.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        openInNew(source);
+                    }
+                });
             }
 
             TextView tvContent = findViewById(R.id.tvContent);
@@ -454,6 +463,8 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             rl.addView(iv);
             rl.addView(ivIcon);
             mLoPicture.addView(rl);
+            //} else if (thumbnail.contains("twitter.com")) {
+            // 트위터
         } else {
             // 일반 썸네일을 위한 이미지뷰 추가
             if (mMediaCount == 0) {
@@ -465,13 +476,14 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         }
 
         iv.setBackgroundResource(R.drawable.placeholder);
-        //Picasso.with(this).load(R.drawable.placeholder).into(iv);
 
         if (thumbnail.contains("twitter.com") || thumbnail.contains("instagram.com")) {
             //-----------------------
             // 트위터/인스타그램 사진 가져오기
             //-----------------------
             //Log.e(mTag, "Request: " + thumbnail);
+
+            Glide.with(getApplicationContext()).asGif().load(R.drawable.loading).into(iv);
 
             StringRequest stringRequest = new StringRequest(Request.Method.GET, thumbnail, new Response.Listener<String>() {
                 @Override
@@ -493,6 +505,9 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                         if (img == null || img.isEmpty()) {
                             // 실제 사진이 없는 경우 (트위터에 업로드된 사진이 없거나 블로그 등의 위부 이미지를 트윗한 경우)
                             mLoPicture.removeView(iv);
+                        } else if (mediaData.getUrl().contains("twitter.com")) {
+                            // 트위터
+                            iv.setVisibility(View.GONE);
                         } else {
                             Picasso.with(getApplicationContext()).load(img).into(iv, new com.squareup.picasso.Callback() {
                                 @Override
@@ -507,6 +522,30 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                                 }
                             });
                         }
+
+                        // 내용 만들기
+                        TextView tv = new TextView(getApplicationContext());
+                        tv.setLayoutParams(mTextParams);
+                        tv.setTextColor(Color.BLACK);
+                        mLoPicture.addView(tv);
+
+                        Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleViewActivity.this, tv, md.getHtml());
+                        //ImageUtil.setClickListenerOnHtmlImageGetter(html, new ImageUtil.Callback() {
+                        //    @Override
+                        //    public void onImageClick(String imageUrl) {
+                        //        //Log.e(mTag, "imageUrl: " + imageUrl);
+                        //        viewImage(imageUrl);
+                        //    }
+                        //}, true);
+                        tv.setText(html);
+                        tv.setMovementMethod(LinkMovementMethod.getInstance());
+
+                        // 내용 만들기
+                        //TextView tvDescription = new TextView(getApplicationContext());
+                        //tvDescription.setLayoutParams(mTextParams);
+                        //tvDescription.setTextColor(Color.BLACK);
+                        //mLoPicture.addView(tvDescription);
+                        //tvDescription.setText(md.getDescription());
                     }
                 }
             }, new Response.ErrorListener() {

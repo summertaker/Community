@@ -3,6 +3,7 @@ package com.summertaker.community.parser;
 import android.text.Html;
 import android.util.Log;
 
+import com.summertaker.community.common.BaseApplication;
 import com.summertaker.community.common.BaseParser;
 import com.summertaker.community.data.ArticleDetailData;
 import com.summertaker.community.data.ArticleListData;
@@ -152,75 +153,9 @@ public class TheqooParser extends BaseParser {
 
             ArrayList<MediaData> mediaDatas = new ArrayList<>();
 
-            //---------------------
-            // 이미지 태그 목록
-            //---------------------
-            //int imgCount = 0;
-            for (Element el : root.select("img")) {
-                String src = el.attr("src");
-                //Log.e(mTag, src);
-
-                if (src.contains("attach.mail.daum.net/") || src.contains("mail1.daumcdn.net")) {
-                    continue;
-                }
-
-                addMediaData(mediaDatas, src, src, null);
-            }
-
-            //------------------------------------------
-            // 더쿠 이미지 목록
-            // http://img.theqoo.net/PZfEq
-            // http://img.theqoo.net/img/PZfEq.jpg
-            //------------------------------------------
-            String regex = "http\\://img\\.theqoo\\.net/\\w+";
-            Pattern pattern = Pattern.compile(regex);
-            Matcher matcher = pattern.matcher(content);   // get a matcher object
-            while (matcher.find()) {
-                String src = matcher.group();
-                //Log.e(mTag, "src: " + match.group());
-
-                if (src.contains(".jpg") || src.contains(".png")) {
-                    continue;
-                }
-
-                if (src.substring(src.length() - 4).equals("/img")) {
-                    continue;
-                }
-
-                //Log.e(mTag, "더쿠 IMG: " + src);
-
-                // URL 텍스트는 내용에서 제거
-                //content = content.replace(src, "");
-
-                src = src.replaceAll("</?.+>", "");
-                src = src.replace("http://img.theqoo.net/", "http://img.theqoo.net/img/") + ".jpg";
-
-                addMediaData(mediaDatas, src, src, null);
-            }
-
-            //------------------------------------------
-            // IMGUR 이미지 목록
-            //------------------------------------------
-            regex = "https?\\://imgur\\.com/\\w+";
-            pattern = Pattern.compile(regex);
-            matcher = pattern.matcher(content);   // get a matcher object
-            while (matcher.find()) {
-                String src = matcher.group();
-                //Log.e(mTag, "imgur: " + match.group());
-
-                //content = content.replace(src, ""); // URL 텍스트는 내용에서 제거
-
-                src = src.replace("http://", "https://");
-                src = src + "h.jpg";
-                //Log.e(mTag, "imgur: " + src);
-
-                addMediaData(mediaDatas, src, src, null);
-            }
-
-            //--------------------------------------
-            // 유튜브 썸네일 사진과 링크 파싱하기
-            //--------------------------------------
-            parseYoutube(root, content, mediaDatas);
+            String regex;
+            Pattern pattern;
+            Matcher matcher;
 
             //-------------------------------------------------------------
             // 트위터 링크 파싱하기
@@ -233,6 +168,7 @@ public class TheqooParser extends BaseParser {
                 String url = matcher.group();
                 //Log.e(mTag, "트위터: " + url);
                 addMediaData(mediaDatas, url, null, url);
+                content = content.replace(url, "");
             }
 
             //----------------------------------------------
@@ -248,30 +184,106 @@ public class TheqooParser extends BaseParser {
                 addMediaData(mediaDatas, url, null, url);
             }
 
-            articleDetailData.setMediaDatas(mediaDatas);
+            //--------------------------------------
+            // 유튜브 썸네일 사진과 링크 파싱하기
+            //--------------------------------------
+            content = parseYoutube(root, content, mediaDatas);
 
-            //ArrayList<String> outLinks = new ArrayList<>();
-            //articleDetailData.setOutLinks(outLinks);
+            if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+                content = content.replaceAll("<(p|span|div)[^>]*>\\s*(<br>)+\\s*</(p|span|div)>", "<br>");
+                content = content.replaceAll("<(p|span|div)[^>]*>\\s*(<br>|&nbsp;)*\\s*</(p|span|div)>", "");
+                content = content.replaceAll("^(<br>)", "");
+                content = content.trim();
+            } else {
+                //---------------------
+                // 이미지 태그 목록
+                //---------------------
+                //int imgCount = 0;
+                for (Element el : root.select("img")) {
+                    String src = el.attr("src");
+                    //Log.e(mTag, src);
 
-            //-------------------------------------------------------------------------
-            // 트위터 URL 텍스트 제거 - 사용자들이 더쿠에 트위터 이미지를 같이 올려준다.
-            //-------------------------------------------------------------------------
-            //content = content.replaceAll("https://twitter.com/\\w+/status/[0-9]{18}", "");
+                    if (src.contains("attach.mail.daum.net/") || src.contains("mail1.daumcdn.net")) {
+                        continue;
+                    }
 
-            // 공백 지우기
-            content = content.replaceAll("<(p|span|div)[^>]*>\\s*(<br>|&nbsp;)*\\s*</(p|span|div)>", "");
-            content = content.replaceAll("\\s*<br>\\s*<br>\\s*", "");
+                    addMediaData(mediaDatas, src, src, null);
+                }
 
-            // 태그 지우기
-            content = content.replaceAll("\\s*<img[^>]*>\\s*", "");
-            content = content.replaceAll("\\s*<iframe[^>]*></iframe>\\s*", "");
-            content = content.replaceAll("\\s*<div class=\"read-file\">\\s*<h3>File List</h3>\\s*<ul>\\s*</ul>\\s*</div>\\s*", "").trim();
+                //------------------------------------------
+                // 더쿠 이미지 목록
+                // http://img.theqoo.net/PZfEq
+                // http://img.theqoo.net/img/PZfEq.jpg
+                //------------------------------------------
+                regex = "http\\://img\\.theqoo\\.net/\\w+";
+                pattern = Pattern.compile(regex);
+                matcher = pattern.matcher(content);   // get a matcher object
+                while (matcher.find()) {
+                    String src = matcher.group();
+                    //Log.e(mTag, "src: " + match.group());
 
-            //Log.e(mTag, "결과\n" + content);
+                    if (src.contains(".jpg") || src.contains(".png")) {
+                        continue;
+                    }
 
-            content = Html.fromHtml(content).toString();
+                    if (src.substring(src.length() - 4).equals("/img")) {
+                        continue;
+                    }
+
+                    //Log.e(mTag, "더쿠 IMG: " + src);
+
+                    // URL 텍스트는 내용에서 제거
+                    //content = content.replace(src, "");
+
+                    src = src.replaceAll("</?.+>", "");
+                    src = src.replace("http://img.theqoo.net/", "http://img.theqoo.net/img/") + ".jpg";
+
+                    addMediaData(mediaDatas, src, src, null);
+                }
+
+                //------------------------------------------
+                // IMGUR 이미지 목록
+                //------------------------------------------
+                regex = "https?\\://imgur\\.com/\\w+";
+                pattern = Pattern.compile(regex);
+                matcher = pattern.matcher(content);   // get a matcher object
+                while (matcher.find()) {
+                    String src = matcher.group();
+                    //Log.e(mTag, "imgur: " + match.group());
+
+                    //content = content.replace(src, ""); // URL 텍스트는 내용에서 제거
+
+                    src = src.replace("http://", "https://");
+                    src = src + "h.jpg";
+                    //Log.e(mTag, "imgur: " + src);
+
+                    addMediaData(mediaDatas, src, src, null);
+                }
+
+                //ArrayList<String> outLinks = new ArrayList<>();
+                //articleDetailData.setOutLinks(outLinks);
+
+                //-------------------------------------------------------------------------
+                // 트위터 URL 텍스트 제거 - 사용자들이 더쿠에 트위터 이미지를 같이 올려준다.
+                //-------------------------------------------------------------------------
+                //content = content.replaceAll("https://twitter.com/\\w+/status/[0-9]{18}", "");
+
+                // 공백 지우기
+                content = content.replaceAll("<(p|span|div)[^>]*>\\s*(<br>|&nbsp;)*\\s*</(p|span|div)>", "");
+                content = content.replaceAll("\\s*<br>\\s*<br>\\s*", "");
+
+                // 태그 지우기
+                content = content.replaceAll("\\s*<img[^>]*>\\s*", "");
+                content = content.replaceAll("\\s*<iframe[^>]*></iframe>\\s*", "");
+                content = content.replaceAll("\\s*<div class=\"read-file\">\\s*<h3>File List</h3>\\s*<ul>\\s*</ul>\\s*</div>\\s*", "").trim();
+
+                content = Html.fromHtml(content).toString();
+            }
+
+            Log.e(mTag, "결과\n" + content);
 
             articleDetailData.setContent(content);
+            articleDetailData.setMediaDatas(mediaDatas);
         }
 
         return articleDetailData;

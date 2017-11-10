@@ -22,13 +22,15 @@ public class BaseParser {
         return new MediaData();
     }
 
-    protected void parseYoutube(Element root, String content, ArrayList<MediaData> mediaDatas) {
+    protected String parseYoutube(Element root, String content, ArrayList<MediaData> mediaDatas) {
+        String result = content;
+
         //------------------------------------------------
         // 유튜브 URL 목록 (1)
         //------------------------------------------------
         String regex = "https\\://www\\.youtube\\.com/watch\\?v=([_|\\-|\\w]+)"; // \\w : 알파벳이나 숫자
         Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(content);   // get a matcher object
+        Matcher matcher = pattern.matcher(result);   // get a matcher object
         while (matcher.find()) {
             String url = matcher.group();
             //Log.e(mTag, "url: " + url);
@@ -37,13 +39,14 @@ public class BaseParser {
             String src = "https://img.youtube.com/vi/" + id + "/0.jpg";
             //Log.e(mTag, "thumbnail: " + src);
 
-            if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
-                String search = "<iframe[^>|.]*src=\"" + regex + "\"[^>|.]*></iframe>";
-                String replace = "<a href=\"https://m.youtube.com/watch?v=" + id + "\"><img src=\"" + src + "\"></a> <small><font color=\"#888888\">Youtube</font></small>";
-                content = content.replaceAll(search, replace);
-            } else {
-                addMediaData(mediaDatas, src, null, url);
-            }
+            //if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+            //    String search = "<iframe[^>|.]*src=\"" + regex + "\"[^>|.]*></iframe>";
+            //    String replace = "<a href=\"https://m.youtube.com/watch?v=" + id + "\"><img src=\"" + src + "\"></a> <small><font color=\"#888888\">Youtube</font></small>";
+            //    content = content.replaceAll(search, replace);
+            //} else {
+            addMediaData(mediaDatas, src, null, url);
+            result = result.replace(url, "");
+            //}
         }
 
         for (Element iframe : root.select("iframe")) {
@@ -59,16 +62,18 @@ public class BaseParser {
                 String src = "https://img.youtube.com/vi/" + id + "/0.jpg";
                 //Log.e(mTag, "src: " + src);
 
-                if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
-                    String search = "<iframe[^>|.]*src=\"" + regex + "\"[^>|.]*></iframe>";
-                    String replace = "<a href=\"https://m.youtube.com/watch?v=" + id + "\"><img src=\"" + src + "\"></a> <small><font color=\"#888888\">Youtube</font></small>";
-                    content = content.replaceAll(search, replace);
-                } else {
-                    addMediaData(mediaDatas, src, null, url);
-                    content = content.replace(iframe.outerHtml(), "");
-                }
+                //if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+                //    String search = "<iframe[^>|.]*src=\"" + regex + "\"[^>|.]*></iframe>";
+                //    String replace = "<a href=\"https://m.youtube.com/watch?v=" + id + "\"><img src=\"" + src + "\"></a> <small><font color=\"#888888\">Youtube</font></small>";
+                //    content = content.replaceAll(search, replace);
+                //} else {
+                addMediaData(mediaDatas, src, null, url);
+                result = result.replace(iframe.outerHtml(), "");
+                //}
             }
         }
+
+        return result;
     }
 
     protected String getYoutubeHtml(String content) {
