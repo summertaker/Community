@@ -15,7 +15,7 @@ public class BaseParser {
     protected String mTag;
 
     public BaseParser() {
-        mTag = "========== " + this.getClass().getSimpleName();
+        mTag = "=== " + this.getClass().getSimpleName();
     }
 
     public MediaData getMediaData(String response) {
@@ -57,9 +57,10 @@ public class BaseParser {
             pattern = Pattern.compile(regex);
             matcher = pattern.matcher(url);   // get a matcher object
 
+            String src = null;
             while (matcher.find()) {
                 String id = matcher.group(1);
-                String src = "https://img.youtube.com/vi/" + id + "/0.jpg";
+                src = "https://img.youtube.com/vi/" + id + "/0.jpg";
                 //Log.e(mTag, "src: " + src);
 
                 //if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
@@ -67,10 +68,13 @@ public class BaseParser {
                 //    String replace = "<a href=\"https://m.youtube.com/watch?v=" + id + "\"><img src=\"" + src + "\"></a> <small><font color=\"#888888\">Youtube</font></small>";
                 //    content = content.replaceAll(search, replace);
                 //} else {
-                addMediaData(mediaDatas, src, null, url);
-                result = result.replace(iframe.outerHtml(), "");
                 //}
             }
+            if (src != null) {
+                addMediaData(mediaDatas, src, null, url);
+            }
+            //Log.e(mTag, "iframe.outerHtml(): " + iframe.outerHtml());
+            result = result.replace(iframe.outerHtml(), "");
         }
 
         return result;
@@ -97,24 +101,26 @@ public class BaseParser {
     }
 
     protected void addMediaData(ArrayList<MediaData> mediaDatas, String thumbnail, String image, String url) {
-        boolean isExist = false;
+        if (mediaDatas != null) {
 
-        if (url != null) {
-            for (MediaData md : mediaDatas) {
-                if (md.getUrl() != null && url.equals(md.getUrl())) {
-                    isExist = true;
-                    break;
+            boolean isExist = false;
+            if (url != null) {
+                for (MediaData md : mediaDatas) {
+                    if (md.getUrl() != null && url.equals(md.getUrl())) {
+                        isExist = true;
+                        break;
+                    }
                 }
             }
-        }
 
-        if (!isExist) {
-            MediaData mediaData = new MediaData();
-            mediaData.setThumbnail(thumbnail);
-            mediaData.setImage(image);
-            mediaData.setUrl(url);
+            if (!isExist) {
+                MediaData mediaData = new MediaData();
+                mediaData.setThumbnail(thumbnail);
+                mediaData.setImage(image);
+                mediaData.setUrl(url);
 
-            mediaDatas.add(mediaData);
+                mediaDatas.add(mediaData);
+            }
         }
     }
 }

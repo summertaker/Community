@@ -3,11 +3,9 @@ package com.summertaker.community.article;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,11 +23,12 @@ import com.summertaker.community.R;
 import com.summertaker.community.common.BaseApplication;
 import com.summertaker.community.data.ArticleListData;
 import com.summertaker.community.data.SiteData;
+import com.summertaker.community.parser.ClienParser;
+import com.summertaker.community.parser.PpomppuParser;
 import com.summertaker.community.parser.RuliwebParser;
 import com.summertaker.community.parser.TheqooParser;
 import com.summertaker.community.parser.TodayhumorParser;
 import com.summertaker.community.util.EndlessScrollListener;
-import com.summertaker.community.util.Util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -130,13 +129,12 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
                 // 그래서 "Basic Activity" 템플릿 사용해서 직접 프로그레스바를 추가함
                 // https://stackoverflow.com/questions/27788195/setprogressbarindeterminatevisibilitytrue-not-working
                 Intent intent = new Intent(getActivity(), ArticleViewActivity.class);
-
+                //Intent intent = new Intent(getActivity(), ArticleActivity.class);
                 intent.putExtra("section", section);
                 intent.putExtra("title", title);
                 intent.putExtra("url", url);
+
                 startActivity(intent);
-                //startActivityForResult(intent, 100);
-                //getActivity().overridePendingTransition(R.anim.slide_in_right, R.anim.slide_out_left);
             }
         });
 
@@ -188,6 +186,10 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
         //mUserAgent = mSiteData.getUserAgent();
         //mRequestUrl = mSiteData.getUrl();
 
+        //if (mSiteData.getUrl().contains("clien")) {
+        //    mCurrentPage = 0;
+        //}
+
         loadData();
 
         return rootView;
@@ -216,7 +218,11 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
         String url = mSiteData.getUrl();
 
         if (mCurrentPage > 1) {
-            url += mSiteData.getPageParam() + mCurrentPage;
+            int page = mCurrentPage;
+            if (url.contains("clien")) {
+                page = page - 1;
+            }
+            url += mSiteData.getPageParam() + page;
             //mLoLoadMore.setVisibility(View.VISIBLE);
         }
         //Log.e(mTag, "url: " + url);
@@ -255,6 +261,12 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
         } else if (mSiteData.getUrl().contains("ruliweb")) {
             RuliwebParser ruliwebParser = new RuliwebParser();
             ruliwebParser.parseList(response, mArticleList);
+        } else if (mSiteData.getUrl().contains("clien")) {
+            ClienParser clienParser = new ClienParser();
+            clienParser.parseList(response, mArticleList);
+        } else if (mSiteData.getUrl().contains("ppomppu")) {
+            PpomppuParser ppomppuParser = new PpomppuParser();
+            ppomppuParser.parseList(response, mArticleList);
         }
 
         renderData();

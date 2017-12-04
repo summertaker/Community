@@ -15,24 +15,6 @@ import java.nio.charset.Charset;
 
 public class Util {
 
-    private static String mTag = "== Util";
-
-    public static String getUrlToFileName(String url, String suffix) {
-        String fileName = url;
-
-        fileName = fileName.replace("http://", "");
-        fileName = fileName.replace("https://", "");
-        fileName = fileName.replace(".", "");
-        fileName = fileName.replace("/", "");
-        fileName = fileName.replace("?", "");
-        fileName = fileName.replace("&", "");
-        fileName = fileName.replace("=", "");
-        fileName = fileName + suffix;
-        //Log.d(mTag, fileName);
-
-        return fileName;
-    }
-
     public static String getJapaneseString(String text, String encoding) {
         if (encoding == null) {
             encoding = "ISO-8859-1"; // // JIS, SJIS, 8859_1, SHIFT-JIS

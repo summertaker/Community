@@ -49,6 +49,7 @@ public class PicassoImageGetter implements Html.ImageGetter {
             if (source.toLowerCase().contains(".gif")) {
                 //Glide.with(mContext).load(source).apply(new RequestOptions().placeholder(R.drawable.placeholder)).into(drawable);
             } else {
+                //Log.e("PICASSO", "source: " + source);
                 Picasso.with(mContext).load(source).placeholder(R.drawable.placeholder).into(drawable);
             }
         }
@@ -84,21 +85,23 @@ public class PicassoImageGetter implements Html.ImageGetter {
         public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
             setDrawable(new BitmapDrawable(mContext.getResources(), bitmap));
 
+            /*
             WindowManager wm = (WindowManager) mContext.getSystemService(Context.WINDOW_SERVICE);
             if (wm != null) {
                 Display display = wm.getDefaultDisplay();
                 Point size = new Point();
                 display.getSize(size);
-                int width = size.x;
-                //int height = size.y;
-                int height = (size.x / bitmap.getWidth()) * bitmap.getHeight();
+                int screenWidth = size.x;
+                //int screenHeight = size.y;
 
-                //Log.e(">>>", "screen: width: " + size.x + ", height: " + size.y);
-                //Log.e(">>>", "bitmap: width: " + bitmap.getWidth() + ", height: " + bitmap.getHeight());
+                //float ratio = screenWidth / bitmap.getWidth();
 
-                drawable.setBounds(0, 0, width, height);
-                setBounds(0, 0, width, height);
+                int height = (screenWidth / bitmap.getWidth()) * bitmap.getHeight();
+
+                drawable.setBounds(0, 0, screenWidth, height);
+                setBounds(0, 0, screenWidth, height);
             }
+            */
         }
 
         @Override

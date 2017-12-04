@@ -18,33 +18,28 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TodayhumorParser extends BaseParser {
+public class PpomppuParser extends BaseParser {
 
     public void parseList(String response, ArrayList<ArticleListData> dataList) {
         /*
-        <a href="view.php?table=bestofbest&no=363965&page=1">
-            <div class="listLineBox list_tr_sisa" mn='754830'>
-                <div class="list_iconBox">
-                        <div class='board_icon_mini sisa' style='align-self:center'></div>
-                </div>
-                <div>
-                    <span class="list_no">363965</span>
-                    <span class="listDate">2017/09/22 11:45</span>
-                    <span class="list_writer" is_member="yes">carryon</span>
-                </div>
-                <div>
-                    <h2 class="listSubject" >네이버를 조져야됨..<span class="list_comment_count"> <span class="memo_count">[3]</span></span></h2>
-                </div>
-                <div>
-                    <span class="list_viewTitle">조회:</span><span class="list_viewCount">1374</span>	            <span class="list_okNokTitle">추천:</span><span class="list_okNokCount">53</span>
-                    <span class="list_iconWrap">
-                    </span>
-                </div>
-            </div>
-        </a>
+        <ul class="bbsList">
+			<li>
+			    <a href="bbs_view.php?id=problem&no=100348"><span class='main_text02'><img src="/images/icon_pop_12.jpg"> 애정표현 심한여자</span><br />
+			    <span class='main_list_title'>[고민포럼]</span>
+			    <span class='main_list_name'>[* 익명 *]
+			    </span>
+			    <span class='main_list_vote'>
+    			    | <span class='main_list_comment'><img class='imgcss' src='/new/asset/images/icon_comment01.PNG' alt='comment' /> 95</span>
+    				<span style="float: right; margin-top:2px;">03:23:55</span>
+			    </span>
+
+			    </a>
+			</li>
         */
 
         //Log.d(mTag, response);
@@ -54,50 +49,33 @@ public class TodayhumorParser extends BaseParser {
         }
 
         Document doc = Jsoup.parse(response);
-        Element root = doc.select("#remove_favorite_alert_div").first();
+        Element root = doc.select(".bbsList").first();
 
         if (root != null) {
-
-            for (Element row : doc.select("a")) {
+            for (Element row : root.select("li")) {
                 String title = "";
-                String commentCount = "";
-                String recommendCount = "";
+                //String commentCount = "";
+                //String recommendCount = "";
                 String url = "";
 
-                Element el = row.select(".listSubject").first();
-                if (el == null) {
+                Element a = row.select("a").first();
+                if (a == null) {
                     continue;
                 }
+                url = "http://m.ppomppu.co.kr/new/" + a.attr("href");
+
+                Element el = a.select(".main_text02").first();
                 title = el.text();
-                //title = title.replaceAll("[0-9]", "").replace("[]", "");
 
-                //Element a = row; //row.select("a").first();
-                url = row.attr("href");
-                url = "http://m.todayhumor.co.kr/" + url;
-
-                el = row.select(".memo_count").first();
-                if (el != null) {
-                    String str = el.text();
-                    title = title.replace(str, "");
-                    title = title.trim();
-
-                    str = str.replace("[", "").replace("]", "");
-                    commentCount = str;
+                if (title.contains("[Amazon]") || title.contains("[amazon]") || title.contains("[11번가]") || title.contains("[티몬]") || title.contains("[구글플레이]")
+                        || title.contains("설문") || title.contains("이벤트")) {
+                    continue;
                 }
 
-                el = row.select(".list_okNokCount").first();
-                if (el != null) {
-                    recommendCount = " (+" + el.text() + ")";
-                }
-
-                title = title + recommendCount;
-
-                //Log.d(mTag, title + " / " + like);
+                //Log.e(mTag, title);
 
                 ArticleListData data = new ArticleListData();
                 data.setTitle(title);
-                data.setCommentCount(commentCount);
-                data.setRecommendCount(recommendCount);
                 data.setUrl(url);
                 dataList.add(data);
             }
@@ -185,10 +163,10 @@ public class TodayhumorParser extends BaseParser {
 
             } else {
                 //<div class='big_img_replace_div' img_id='' img_src='http://cdn.loonastatic.com//img/user/gif/0/1/5/0/0150779558318979.gif' img_filesize='3443962'>
-		        //  <div  style='display:table-cell; vertical-align: middle;'>
+                //  <div  style='display:table-cell; vertical-align: middle;'>
                 //    <div>대용량 이미지입니다.<br>확인하시려면 클릭하세요.<br>크기 : 3.28 MB</div>
                 //  </div>
-	            //</div>
+                //</div>
                 //regex = "<div[^>|.]+img_src='(.*)'>\\s*<div[^>|.]+>\\s*<div>.+</div>\\s*</div>\\s*</div>";
                 //pattern = Pattern.compile(regex);
                 //matcher = pattern.matcher(content);

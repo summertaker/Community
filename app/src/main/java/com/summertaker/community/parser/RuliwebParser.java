@@ -9,6 +9,7 @@ import com.summertaker.community.data.ArticleDetailData;
 import com.summertaker.community.data.ArticleListData;
 import com.summertaker.community.data.CommentData;
 import com.summertaker.community.data.MediaData;
+import com.summertaker.community.util.Util;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -115,19 +116,12 @@ public class RuliwebParser extends BaseParser {
             root = root.select(".view_content").first();
 
             String content = root.html();
-            //Log.e(mTag, "원본\n" + content);
+            Log.e(mTag, "원본\n" + content);
 
             content = content.replaceAll("src=\"//", "src=\"http://"); // 이미지 URL 처리
 
             if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
-                // H1, H2, H3 ... 글자 크기 리셋
-                content = content.replaceAll("<h\\d[^>|.]*>", "<p>");
-                content = content.replaceAll("</h\\d>", "</p>");
-
-                // 공백 제거하기
-                content = content.replaceAll("\\s*&nbsp;\\s*", "");
-                content = content.replaceAll("<p[^>|.]*>\\s*(<br>)*\\s*</p>", "");
-                content = content.replaceAll("</p>\\s*<br>", "</p>");
+                //
             } else {
                 ArrayList<MediaData> mediaDatas = new ArrayList<>();
 
@@ -144,12 +138,25 @@ public class RuliwebParser extends BaseParser {
                 parseYoutube(root, content, mediaDatas);
 
                 articleDetailData.setMediaDatas(mediaDatas);
-
-                content = Html.fromHtml(content).toString().trim();
-                //content = content.replaceAll("\\s\\s", " ");
             }
 
-            //Log.e(mTag, "결과\n" + content);
+            // H1, H2, H3 ... 글자 크기 리셋
+            content = content.replaceAll("<h\\d[^>|.]*>", "<p>");
+            content = content.replaceAll("</h\\d>", "</p>");
+
+            // 공백 제거하기
+            content = content.replaceAll("\\s*&nbsp;\\s*", "");
+            content = content.replaceAll("<p[^>|.]*>\\s*(<br>)*\\s*</p>", "");
+            content = content.replaceAll("</p>\\s*<br>", "</p>");
+
+            //content = content.replaceAll("<p[^>]*>", ""); // <p> to <br>
+            //content = content.replaceAll("</p>", "<br>");
+
+            //if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+            //    content = Html.fromHtml(content).toString().trim();
+            //}
+
+            Log.e(mTag, "결과\n" + content);
 
             articleDetailData.setContent(content);
         }

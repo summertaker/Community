@@ -45,27 +45,27 @@ public class BaseApplication extends Application {
         mSiteList = new ArrayList<>();
 
         mSiteList.add(new SiteData("오유베오베", USER_AGENT_MOBILE, "http://m.todayhumor.co.kr/list.php?table=bestofbest", "&page="));
+        mSiteList.add(new SiteData("루리웹PC", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1003/list", "?page="));
+        mSiteList.add(new SiteData("루리웹모바일", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1004/list", "?page="));
+        mSiteList.add(new SiteData("루리웹콘솔", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1001/list", "?page="));
+        mSiteList.add(new SiteData("루리웹사정경", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/300018/list", "?page="));
+        mSiteList.add(new SiteData("클리앙공감", USER_AGENT_MOBILE, "https://m.clien.net/service/group/board_all?&od=T33", "&po="));
+        //mSiteList.add(new SiteData("뽐뿌인기", USER_AGENT_MOBILE, "http://m.ppomppu.co.kr/new/pop_bbs.php", "?page="));
 
         //mSiteList.add(new SiteData("루리웹베스트", USER_AGENT_MOBILE, "http://m.ruliweb.com/best", "?page="));
         //mSiteList.add(new SiteData("루리웹힛갤", USER_AGENT_MOBILE, "http://m.ruliweb.com/best/selection", "?page="));
-        mSiteList.add(new SiteData("루리웹사정경", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/300018/list", "?page="));
-        //mSiteList.add(new SiteData("루리웹PC", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1003/list", "?page="));
-        //mSiteList.add(new SiteData("루리웹모바일", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1004/list", "?page="));
-        //mSiteList.add(new SiteData("루리웹콘솔", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1001/list", "?page="));
-
-        //mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
-        mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
-        //mSiteList.add(new SiteData("48스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=talk48&filter_mode=normal&category=161632742", "&page="));
-        //mSiteList.add(new SiteData("48돌", USER_AGENT_MOBILE, "http://theqoo.net/dol48?filter_mode=normal", "&page="));
+        //mSiteList.add(new SiteData("루리웹스샷", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1008", "?page="));
 
         //mSiteList.add(new SiteData("보배베스트", "http://m.bobaedream.co.kr/board/new_writing/best/1"));
         //mSiteList.add(new SiteData("웃대오늘베", "http://m.humoruniv.com/board/list.html?table=pds&st=day&pg=0"));
-        //mSiteList.add(new SiteData("뽐뿌핫", "http://m.ppomppu.co.kr/new/hot_bbs.php?page=1"));
-        //mSiteList.add(new SiteData("뽐뿌인기", "http://m.ppomppu.co.kr/new/pop_bbs.php?page=1"));
         //mSiteList.add(new SiteData("엠팍최다추천", "http://mlbpark.donga.com/mp/best.php?b=bullpen&m=like"));
-        //mSiteData.add(new SiteData("SLR클럽추천", "http://www.slrclub.com/bbs/zboard.php?id=best_article&category=1&setsearch=category"));
-        //mSiteData.add(new SiteData("SLR클럽인기", "http://www.slrclub.com/bbs/zboard.php?id=hot_article&category=1&setsearch=category"));
-        //mSiteData.add(new SiteData("클리앙공감", "https://m.clien.net/service/group/board_all?od=T33"));
+        //mSiteList.add(new SiteData("SLR클럽추천", USER_AGENT_MOBILE, "http://www.slrclub.com/bbs/zboard.php?id=best_article&category=1&setsearch=category", ""));
+        //mSiteList.add(new SiteData("SLR클럽인기", "http://www.slrclub.com/bbs/zboard.php?id=hot_article&category=1&setsearch=category"));
+
+        //mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
+        //mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
+        //mSiteList.add(new SiteData("48스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=talk48&filter_mode=normal&category=161632742", "&page="));
+        //mSiteList.add(new SiteData("48돌", USER_AGENT_MOBILE, "http://theqoo.net/dol48?filter_mode=normal", "&page="));
     }
 
     public static synchronized BaseApplication getInstance() {

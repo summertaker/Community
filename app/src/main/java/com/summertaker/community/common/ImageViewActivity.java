@@ -41,6 +41,7 @@ public class ImageViewActivity extends BaseActivity {
 
         // https://github.com/jsibbold/zoomage
         ImageView ivPicture = findViewById(R.id.ivPicture);
+
         Glide.with(this).load(url).into(ivPicture);
         //Picasso.with(this).load(url).into(ivPicture);
     }

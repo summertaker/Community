@@ -35,8 +35,6 @@ import com.bumptech.glide.load.resource.gif.GifDrawable;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.RequestOptions;
 import com.bumptech.glide.request.target.Target;
-import com.hannesdorfmann.swipeback.Position;
-import com.hannesdorfmann.swipeback.SwipeBack;
 import com.squareup.picasso.Picasso;
 import com.summertaker.community.R;
 import com.summertaker.community.common.BaseActivity;
@@ -46,9 +44,7 @@ import com.summertaker.community.common.ImageViewActivity;
 import com.summertaker.community.data.ArticleDetailData;
 import com.summertaker.community.data.CommentData;
 import com.summertaker.community.data.MediaData;
-import com.summertaker.community.parser.ClienParser;
 import com.summertaker.community.parser.InstagramParser;
-import com.summertaker.community.parser.PpomppuParser;
 import com.summertaker.community.parser.RuliwebParser;
 import com.summertaker.community.parser.TheqooParser;
 import com.summertaker.community.parser.TodayhumorParser;
@@ -66,7 +62,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ArticleViewActivity extends BaseActivity implements ArticleViewInterface {
+public class ArticleActivity extends BaseActivity implements ArticleViewInterface {
 
     private String mTitle;
     private String mUrl;
@@ -89,15 +85,15 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
     private String document_srl = "";
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.article_view_activity);
+    private SwipeBackLayout swipeBackLayout;
 
-        // Init the swipe back
-        SwipeBack.attach(this, Position.LEFT)
-                .setContentView(R.layout.article_view_activity)
-                .setSwipeBackView(R.layout.swipeback_custom);
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.article_activity);
+
+        swipeBackLayout = findViewById(R.id.swipe_back_layout);
+        swipeBackLayout.setSwipeBackListener(new SwipeBackLayout.SwipeBackFinishActivityListener(this));
 
         Intent intent = getIntent();
         String section = intent.getStringExtra("section");
@@ -118,6 +114,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         setBaseStatusBar(); // 상태바 설정
         setBaseToolbar(section); // 툴바 설정
 
+        /*
         mProgressBar = findViewById(R.id.toolbar_progress_bar);
         mProgressBar.setVisibility(View.VISIBLE);
 
@@ -125,17 +122,6 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
         TextView tvTitle = findViewById(R.id.tvTitle);
         tvTitle.setText(mTitle);
-
-        /*
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                //Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG).setAction("Action", null).show();
-                finish();
-            }
-        });
-        */
 
         float density = getResources().getDisplayMetrics().density;
         int height = (int) (272 * density);
@@ -153,13 +139,8 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         mIconParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         //mIconParams.addRule(RelativeLayout.CENTER_IN_PARENT, RelativeLayout.TRUE);
 
-        doStringRequest(mUrl, Request.Method.GET);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        overridePendingTransition(R.anim.swipeback_stack_to_front, R.anim.swipeback_stack_right_out);
+        //doStringRequest(mUrl, Request.Method.GET);
+        */
     }
 
     @Override
@@ -253,15 +234,15 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
     private void parseData(String url, String response) {
         if ("http://theqoo.net/index.php".equals(url)) {
-            // 더쿠 댓글
+            // 더쿠 댓글 목록
             Log.e(mTag, response);
-        } else if (url.contains("theqoo")) {
-            // 더쿠 글 내용
+        } else if (url.contains("theqoo.net")) {
+            // 더쿠 글 상세
             TheqooParser theqooParser = new TheqooParser();
             mArticleDetailData = theqooParser.parseDetail(response);
             renderData();
-        } else if (url.contains("todayhumor")) {
-            // 오유 글 내용
+        } else if (url.contains("todayhumor.co.kr")) {
+            // 오유 글 상세
             TodayhumorParser todayhumorParser = new TodayhumorParser();
             if (url.contains("ajax_memo_list.php")) {
                 mCommentDataList = todayhumorParser.parseComment(response);
@@ -270,32 +251,15 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                 mArticleDetailData = todayhumorParser.parseDetail(response);
                 renderData();
             }
-        } else if (url.contains("ruliweb")) {
-            // 루리웹 글 내용, 댓글
+        } else if (url.contains("ruliweb.com")) {
+            // 루리웹 글 상세, 댓글
             RuliwebParser ruliwebParser = new RuliwebParser();
             ruliwebParser.parseDetail(response, mArticleDetailData, mCommentDataList);
-            renderData();
-        } else if (url.contains("clien")) {
-            // 클리앙 글 내용
-            ClienParser clienParser = new ClienParser();
-            if (url.contains("/comment")) {
-                mCommentDataList = clienParser.parseComment(response);
-                renderComment();
-            } else {
-                mArticleDetailData = clienParser.parseDetail(response);
-                renderData();
-            }
-        } else if (url.contains("ppomppu")) {
-            // 뽐뿌 글 내용
-            PpomppuParser ppomppuParser = new PpomppuParser();
-            mArticleDetailData = ppomppuParser.parseDetail(response);
             renderData();
         }
     }
 
     private void renderData() {
-        //Log.e(mTag, "renderData()...");
-
         mLoPicture = findViewById(R.id.loPicture);
 
         if (mArticleDetailData.getMediaDatas() != null) {
@@ -413,7 +377,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                 //htmlTextView.setHtml(content, new HtmlHttpImageGetter(htmlTextView));
 
                 // https://medium.com/@rajeefmk/android-textview-and-image-loading-from-url-part-1-a7457846abb6
-                Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleViewActivity.this, tvContent, content);
+                Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleActivity.this, tvContent, content);
                 ImageUtil.setClickListenerOnHtmlImageGetter(html, new ImageUtil.Callback() {
                     @Override
                     public void onImageClick(String imageUrl) {
@@ -429,21 +393,14 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         }
 
         // 댓글 로드하기
-        if (mUrl.contains("todayhumor")) {
+        if (mUrl.contains("todayhumor.co.kr")) {
             String url = "http://m.todayhumor.co.kr/ajax_memo_list.php?parent_table="
                     + mArticleDetailData.getTable() + "&parent_id="
                     + mArticleDetailData.getId() + "&is_mobile=Y";
             doStringRequest(url, Request.Method.GET);
-        } else if (mUrl.contains("ruliweb")) {
+        } else if (mUrl.contains("ruliweb.com")) {
             renderComment();
-        } else if (mUrl.contains("clien")) {
-            // https://m.clien.net/service/board/park/11501977?po=0&od=T33&sk=&sv=&category=&groupCd=clien_all&articlePeriod=default
-            String[] array = mUrl.split("\\?");
-            String url = array[0].replace("/service/", "/service/api/");
-            url = url + "/comment?param={\"order\":\"date\",\"po\":0,\"ps\":100}";
-            //Log.e(mTag, "url: " + url);
-            doStringRequest(url, Request.Method.GET);
-        } else if (mUrl.contains("theqoo")) {
+        } else if (mUrl.contains("theqoo.net")) {
             //String url = "http://theqoo.net/index.php"; //?act=dispBoardContentCommentListTheqoo&document_srl=" + document_srl + "&cpage=0";
             //doJsonObjectRequest(url);
             mProgressBar.setVisibility(View.GONE);
@@ -460,7 +417,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
         if (thumbnail == null || thumbnail.isEmpty()) {
             return;
         }
-        Log.e(mTag, "crateMediaData.thumbnail: " + thumbnail);
+        //Log.e(mTag, "crateMediaData.thumbnail: " + thumbnail);
 
         final ProportionalImageView iv = new ProportionalImageView(this);
 
@@ -468,8 +425,6 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             //--------------------------------------------------
             // 동영상은 썸네일 위에 플레이 아이콘을 표시한다.
             //--------------------------------------------------
-            Log.e(mTag, "youtube...");
-
             final RelativeLayout rl = new RelativeLayout(this);
             if (mMediaCount == 0) {
                 rl.setLayoutParams(mRelativeParamsNoMargin);
@@ -557,7 +512,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                         tv.setTextColor(Color.BLACK);
                         mLoPicture.addView(tv);
 
-                        Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleViewActivity.this, tv, md.getHtml());
+                        Spannable html = ImageUtil.getSpannableHtmlWithImageGetter(ArticleActivity.this, tv, md.getHtml());
                         //ImageUtil.setClickListenerOnHtmlImageGetter(html, new ImageUtil.Callback() {
                         //    @Override
                         //    public void onImageClick(String imageUrl) {

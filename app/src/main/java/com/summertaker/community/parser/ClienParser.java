@@ -21,32 +21,9 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class TodayhumorParser extends BaseParser {
+public class ClienParser extends BaseParser {
 
     public void parseList(String response, ArrayList<ArticleListData> dataList) {
-        /*
-        <a href="view.php?table=bestofbest&no=363965&page=1">
-            <div class="listLineBox list_tr_sisa" mn='754830'>
-                <div class="list_iconBox">
-                        <div class='board_icon_mini sisa' style='align-self:center'></div>
-                </div>
-                <div>
-                    <span class="list_no">363965</span>
-                    <span class="listDate">2017/09/22 11:45</span>
-                    <span class="list_writer" is_member="yes">carryon</span>
-                </div>
-                <div>
-                    <h2 class="listSubject" >네이버를 조져야됨..<span class="list_comment_count"> <span class="memo_count">[3]</span></span></h2>
-                </div>
-                <div>
-                    <span class="list_viewTitle">조회:</span><span class="list_viewCount">1374</span>	            <span class="list_okNokTitle">추천:</span><span class="list_okNokCount">53</span>
-                    <span class="list_iconWrap">
-                    </span>
-                </div>
-            </div>
-        </a>
-        */
-
         //Log.d(mTag, response);
 
         if (response == null || response.isEmpty()) {
@@ -54,50 +31,30 @@ public class TodayhumorParser extends BaseParser {
         }
 
         Document doc = Jsoup.parse(response);
-        Element root = doc.select("#remove_favorite_alert_div").first();
+        Element root = doc.select(".post-list").first();
 
         if (root != null) {
+            //Log.e(mTag, root.html());
 
-            for (Element row : doc.select("a")) {
+            for (Element row : root.select(".list-row")) {
                 String title = "";
-                String commentCount = "";
-                String recommendCount = "";
                 String url = "";
 
-                Element el = row.select(".listSubject").first();
-                if (el == null) {
+                Element a = row.select("a").first();
+                if (a == null) {
                     continue;
                 }
+                url = "https://m.clien.net" + a.attr("href");
+
+                Element el = a.select(".subject-shortname").first();
+                title = a.html().replace(el.outerHtml(), "");
+                el = Jsoup.parse(title);
                 title = el.text();
-                //title = title.replaceAll("[0-9]", "").replace("[]", "");
 
-                //Element a = row; //row.select("a").first();
-                url = row.attr("href");
-                url = "http://m.todayhumor.co.kr/" + url;
-
-                el = row.select(".memo_count").first();
-                if (el != null) {
-                    String str = el.text();
-                    title = title.replace(str, "");
-                    title = title.trim();
-
-                    str = str.replace("[", "").replace("]", "");
-                    commentCount = str;
-                }
-
-                el = row.select(".list_okNokCount").first();
-                if (el != null) {
-                    recommendCount = " (+" + el.text() + ")";
-                }
-
-                title = title + recommendCount;
-
-                //Log.d(mTag, title + " / " + like);
+                //Log.e(mTag, title);
 
                 ArticleListData data = new ArticleListData();
                 data.setTitle(title);
-                data.setCommentCount(commentCount);
-                data.setRecommendCount(recommendCount);
                 data.setUrl(url);
                 dataList.add(data);
             }
@@ -109,28 +66,12 @@ public class TodayhumorParser extends BaseParser {
 
         Document doc = Jsoup.parse(response);
 
-        Element root = doc.select(".viewContent").first();
+        Element root = doc.select(".post-content").first();
 
         //-----------------------------------------------------------------------------------------------------
         // https://stackoverflow.com/questions/26346698/parsing-html-into-formatted-plaintext-using-jsoup
         //-----------------------------------------------------------------------------------------------------
         //HtmlToPlainText toPlainText = new HtmlToPlainText();
-
-        String regex = "var parent_table = \"(\\w+)\";";
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(response);
-        while (matcher.find()) {
-            //Log.d(mTag, "parentTable: " + matcher.group(1));
-            data.setTable(matcher.group(1));
-        }
-
-        regex = "var parent_id = \"(\\w+)\";";
-        pattern = Pattern.compile(regex);
-        matcher = pattern.matcher(response);
-        while (matcher.find()) {
-            //Log.d(mTag, "parentId: " + matcher.group(1));
-            data.setId(matcher.group(1));
-        }
 
         if (root != null) {
             String content = root.html();
@@ -142,22 +83,10 @@ public class TodayhumorParser extends BaseParser {
                 String search = "";
                 String replace = "";
 
-                // 대용량 이미지 처리
-                search = "<div\\sclass=\"big_img_replace_div\"\\s.+\\simg_src=\"(.+)\"\\simg_filesize=\".*\">";
-                replace = "<a href=\"$1\">이미지 보기</a>";
-                content = content.replaceAll(search, replace);
-
                 // 비디오 태그
                 search = "<video\\s.+\\sposter=\"(.+)\"\\s*data-setup=\".+\">\\s*<source\\ssrc=\"(.+)\"\\s.+>\\s*</video>";
                 replace = "<a href=\"$2\"><img src=\"$1\"></a> <small><font color=\"#888888\">mp4</font></small>";
                 content = content.replaceAll(search, replace);
-                //for (Element el : root.select("video")) {
-                //    String thumbnail = el.attr("poster");
-                //    Element source = el.select("source").first();
-                //    String url = source.attr("src");
-                //    addMediaData(mediaDatas, thumbnail, null, url);
-                //    content = content.replace(el.outerHtml(), ""); // 태그 제거
-                //}
 
                 // 유튜브
                 content = parseYoutube(root, content, mediaDatas);
@@ -185,10 +114,10 @@ public class TodayhumorParser extends BaseParser {
 
             } else {
                 //<div class='big_img_replace_div' img_id='' img_src='http://cdn.loonastatic.com//img/user/gif/0/1/5/0/0150779558318979.gif' img_filesize='3443962'>
-		        //  <div  style='display:table-cell; vertical-align: middle;'>
+                //  <div  style='display:table-cell; vertical-align: middle;'>
                 //    <div>대용량 이미지입니다.<br>확인하시려면 클릭하세요.<br>크기 : 3.28 MB</div>
                 //  </div>
-	            //</div>
+                //</div>
                 //regex = "<div[^>|.]+img_src='(.*)'>\\s*<div[^>|.]+>\\s*<div>.+</div>\\s*</div>\\s*</div>";
                 //pattern = Pattern.compile(regex);
                 //matcher = pattern.matcher(content);
@@ -228,22 +157,11 @@ public class TodayhumorParser extends BaseParser {
             data.setMediaDatas(mediaDatas);
 
             // 공백 없애기
-            content = content.replaceAll("\\s{2,}", " ");
-            //content = content.replaceAll("(&nbsp;){2,}", "");
-            content = content.replaceAll("&nbsp;", "");
+            //content = content.replaceAll("\\s{2,}", " ");
+            //content = content.replaceAll("&nbsp;", "");
 
             // 빈 줄 없애기
-            content = content.replaceAll("\\s*<div[^>]*>\\s*(<span[^>]*>)?\\s*<br>\\s*(</span>)?\\s*</div>\\s*", "<br>");
-            content = content.replaceAll("\\s*<div[^>]*>\\s*(&nbsp;)*\\s*</div>\\s*", "<br>");
-            content = content.replaceAll("(\\s*<br>\\s*){2,}", "<br>");
-            content = content.replaceAll("</div>\\s*<br>", "</div>");
-
-            // 이미지 처리 주위 div 제거
-            //content = content.replaceAll("<div[^>]*>\\s*(<img\\s[^>]*>)\\s*</div>", "$1<br>");
-
-            // 맨 앞, 맨 끝 <br> 잘라내기
-            content = content.replaceAll("^(<br>)", "");
-            content = content.replaceAll("(<br>|<br />)$", "").trim();
+            content = content.replaceAll("<p><br></p>", "");
 
             if (!BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
                 content = Html.fromHtml(content).toString();
@@ -259,42 +177,38 @@ public class TodayhumorParser extends BaseParser {
 
     public ArrayList<CommentData> parseComment(String response) {
         /*
-        <a href="view.php?table=bestofbest&no=363965&page=1">
-            <div class="listLineBox list_tr_sisa" mn='754830'>
-                <div class="list_iconBox">
-                        <div class='board_icon_mini sisa' style='align-self:center'></div>
-                </div>
-                <div>
-                    <span class="list_no">363965</span>
-                    <span class="listDate">2017/09/22 11:45</span>
-                    <span class="list_writer" is_member="yes">carryon</span>
-                </div>
-                <div>
-                    <h2 class="listSubject" >네이버를 조져야됨..<span class="list_comment_count"> <span class="memo_count">[3]</span></span></h2>
-                </div>
-                <div>
-                    <span class="list_viewTitle">조회:</span><span class="list_viewCount">1374</span>
-                    <span class="list_okNokTitle">추천:</span><span class="list_okNokCount">53</span>
-                    <span class="list_iconWrap">
-                    </span>
-                </div>
-            </div>
-        </a>
+        [{
+            "boardCd":"park",
+            "boardSn":11502341,
+            "comment":"<p>공감합니다.</p>",
+            "oriComment":"<p>공감합니다.</p>",
+            "commentCount":21,
+            "commentSn":84724199,
+            "imageLocation":null,
+            "images":[],
+            "insertDate":"2017-12-04 08:29:59",
+            "ip":"175.♡.18.248",
+            "likeCount":4,
+            "member":{"nick":"안드레이","nickImageUrl":"","userId":"andy4lee"},
+            "bizInfo":null,
+            "status":"S61",
+            "updateDate":"2017-12-04T08:29:59.000+0900",
+            "reCommentSn":84724199,
+            "reCommentCount":null,
+            "todayYn":true
+        },
         */
 
-        //Log.d(mTag, response);
+        //Log.e(mTag, "response: " + response);
 
         ArrayList<CommentData> dataList = new ArrayList<>();
-
         if (response == null || response.isEmpty()) {
             return dataList;
         }
 
         try {
-            JSONObject jsonObject = new JSONObject(response);
-
-            // Getting JSON Array node
-            JSONArray jsonArray = jsonObject.getJSONArray("memos");
+            JSONArray jsonArray = new JSONArray(response);
+            //Log.e(mTag, "jsonArray.length(): " + jsonArray.length());
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject obj = jsonArray.getJSONObject(i);
@@ -303,17 +217,23 @@ public class TodayhumorParser extends BaseParser {
                 String search = "";
                 String replace = "";
 
-                String recommend = obj.getString("ok");
-                int recommendCount = 0;
-                if (recommend != null && !recommend.isEmpty()) {
-                    recommendCount = Integer.parseInt(recommend.replaceAll(",", ""));
-                }
-                if (recommendCount < 10) {
+                //String recommend = obj.getString("ok");
+                //int recommendCount = 0;
+                //if (recommend != null && !recommend.isEmpty()) {
+                //    recommendCount = Integer.parseInt(recommend.replaceAll(",", ""));
+                //}
+                //if (recommendCount < 10) {
+                //    continue;
+                //}
+
+                String content = obj.getString("comment").trim();
+                //Log.e(mTag, "원본\n" + content);
+
+                String likeCountString = obj.getString("likeCount").trim();
+                int likeCount = Integer.parseInt(likeCountString);
+                if (likeCount < 10) {
                     continue;
                 }
-
-                String content = obj.getString("memo").trim();
-                //Log.e(mTag, "원본\n" + content);
 
                 if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
                     // 이미지 태그
@@ -358,32 +278,25 @@ public class TodayhumorParser extends BaseParser {
                     }
                 }
 
-                /*
-                // 내용을 일반 텍스트로 변환
-                content = content.replaceAll("\\s*<img.+?>\\s*(<br>)*\\s*", "");
-                content = content.replaceAll("\\s*(&nbsp;)+\\s*", " ");
-                content = content.replaceAll("\\s*(&gt;)+\\s*", ">");
-                content = content.replaceAll("\\s*(&lt;)+\\s*", "<");
-                content = content.replaceAll("<br />", "\n");
-                content = content.replaceAll("<br>", "");
-                */
+                content = content.replaceAll("<p><br>\n</p>", "");
 
-                content = content.trim();
+                content = content.replaceAll("<p[^>]*>", ""); // <p> to <br>
+                content = content.replaceAll("</p>", "<br>");
 
-                if ("<br>".equals(content) || "<br><br />".equals(content)) {
-                    content = "";
-                } else {
-                    // 맨 앞, 맨 끝 <br> 잘라내기
-                    content = content.replaceAll("^(<br>)", "");
-                    content = content.replaceAll("(<br>|<br />)$", "");
-                }
+/*
+https://stackoverflow.com/questions/3075130/what-is-the-difference-between-and-regular-expressions
 
-                if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
-                    content = content + " <font color=\"#888888\">(+" + recommend + ")</font>";
-                } else {
-                    content = Html.fromHtml(content).toString();
-                    content = content + " (+" + recommend + ")";
-                }
+Ex) eeeAiiZuuuuAoooZeeee
+
+A.*Z yields 1 match: AiiZuuuuAoooZ
+
+A.*?Z yields 2 matches: AiiZ and AoooZ
+*/
+
+                content = content.replaceAll("<br>\\s*?<br>", "");
+                content = content.replaceAll("(<br>)$", ""); // 맨 끝 <br> 제거
+
+                content = content + " (+" + likeCountString + ")";
 
                 //Log.e(mTag, "결과\n" + content);
 
@@ -394,7 +307,8 @@ public class TodayhumorParser extends BaseParser {
                 dataList.add(data);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e(mTag, e.toString());
+            //e.printStackTrace();
         }
 
         return dataList;
