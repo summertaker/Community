@@ -45,20 +45,24 @@ public class BaseApplication extends Application {
         mSiteList = new ArrayList<>();
 
         mSiteList.add(new SiteData("오유베오베", USER_AGENT_MOBILE, "http://m.todayhumor.co.kr/list.php?table=bestofbest", "&page="));
+        mSiteList.add(new SiteData("보배베스트", USER_AGENT_MOBILE, "http://m.bobaedream.co.kr/board/new_writing/best", "/"));
+        mSiteList.add(new SiteData("클리앙공감", USER_AGENT_MOBILE, "https://m.clien.net/service/group/board_all?&od=T33", "&po="));
+        mSiteList.add(new SiteData("클리앙소식", USER_AGENT_MOBILE, "https://m.clien.net/service/board/news?&od=T31", "&po="));
+        mSiteList.add(new SiteData("클리앙팁", USER_AGENT_MOBILE, "https://m.clien.net/service/board/lecture?&od=T31", "&po="));
         mSiteList.add(new SiteData("루리웹PC", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1003/list", "?page="));
         mSiteList.add(new SiteData("루리웹모바일", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1004/list", "?page="));
         mSiteList.add(new SiteData("루리웹콘솔", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1001/list", "?page="));
         mSiteList.add(new SiteData("루리웹사정경", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/300018/list", "?page="));
-        mSiteList.add(new SiteData("클리앙공감", USER_AGENT_MOBILE, "https://m.clien.net/service/group/board_all?&od=T33", "&po="));
         //mSiteList.add(new SiteData("뽐뿌인기", USER_AGENT_MOBILE, "http://m.ppomppu.co.kr/new/pop_bbs.php", "?page="));
+
+        // 사진 외부 링크 제한 걸려있음
+        //mSiteList.add(new SiteData("엠팍추천", USER_AGENT_MOBILE, "http://mlbpark.donga.com/mp/best.php?b=bullpen&m=like", null));
 
         //mSiteList.add(new SiteData("루리웹베스트", USER_AGENT_MOBILE, "http://m.ruliweb.com/best", "?page="));
         //mSiteList.add(new SiteData("루리웹힛갤", USER_AGENT_MOBILE, "http://m.ruliweb.com/best/selection", "?page="));
         //mSiteList.add(new SiteData("루리웹스샷", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1008", "?page="));
 
-        //mSiteList.add(new SiteData("보배베스트", "http://m.bobaedream.co.kr/board/new_writing/best/1"));
         //mSiteList.add(new SiteData("웃대오늘베", "http://m.humoruniv.com/board/list.html?table=pds&st=day&pg=0"));
-        //mSiteList.add(new SiteData("엠팍최다추천", "http://mlbpark.donga.com/mp/best.php?b=bullpen&m=like"));
         //mSiteList.add(new SiteData("SLR클럽추천", USER_AGENT_MOBILE, "http://www.slrclub.com/bbs/zboard.php?id=best_article&category=1&setsearch=category", ""));
         //mSiteList.add(new SiteData("SLR클럽인기", "http://www.slrclub.com/bbs/zboard.php?id=hot_article&category=1&setsearch=category"));
 

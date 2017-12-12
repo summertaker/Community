@@ -23,7 +23,9 @@ import com.summertaker.community.R;
 import com.summertaker.community.common.BaseApplication;
 import com.summertaker.community.data.ArticleListData;
 import com.summertaker.community.data.SiteData;
+import com.summertaker.community.parser.BobaedreamParser;
 import com.summertaker.community.parser.ClienParser;
+import com.summertaker.community.parser.MlbparkParser;
 import com.summertaker.community.parser.PpomppuParser;
 import com.summertaker.community.parser.RuliwebParser;
 import com.summertaker.community.parser.TheqooParser;
@@ -163,28 +165,28 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
             }
         });
 
-        mEndlessScrollListener = new EndlessScrollListener() {
-            @Override
-            public boolean onLoadMore(int page, int totalItemsCount) {
-                if (mIsDataExists) {
-                    //Log.e(mTag, "page: " + page);
-                    loadData();
-                    return true; // ONLY if more data is actually being loaded; false otherwise.
-                } else {
-                    return false;
-                }
-            }
-        };
-
-        mListView.setOnScrollListener(mEndlessScrollListener);
-
-        mLoLoadMore = rootView.findViewById(R.id.loLoadMore);
-
         int position = getArguments().getInt("position");
-
         mSiteData = BaseApplication.getInstance().getSiteList().get(position);
         //mUserAgent = mSiteData.getUserAgent();
         //mRequestUrl = mSiteData.getUrl();
+
+        if (mSiteData.getPageParam() != null && !mSiteData.getPageParam().isEmpty()) {
+            mEndlessScrollListener = new EndlessScrollListener() {
+                @Override
+                public boolean onLoadMore(int page, int totalItemsCount) {
+                    if (mIsDataExists) {
+                        //Log.e(mTag, "page: " + page);
+                        loadData();
+                        return true; // ONLY if more data is actually being loaded; false otherwise.
+                    } else {
+                        return false;
+                    }
+                }
+            };
+            mListView.setOnScrollListener(mEndlessScrollListener);
+        }
+
+        mLoLoadMore = rootView.findViewById(R.id.loLoadMore);
 
         //if (mSiteData.getUrl().contains("clien")) {
         //    mCurrentPage = 0;
@@ -261,6 +263,12 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
         } else if (mSiteData.getUrl().contains("ruliweb")) {
             RuliwebParser ruliwebParser = new RuliwebParser();
             ruliwebParser.parseList(response, mArticleList);
+        } else if (mSiteData.getUrl().contains("bobaedream")) {
+            BobaedreamParser bobaedreamParser = new BobaedreamParser();
+            bobaedreamParser.parseList(response, mArticleList);
+        } else if (mSiteData.getUrl().contains("mlbpark")) {
+            MlbparkParser mlbparkParser = new MlbparkParser();
+            mlbparkParser.parseList(response, mArticleList);
         } else if (mSiteData.getUrl().contains("clien")) {
             ClienParser clienParser = new ClienParser();
             clienParser.parseList(response, mArticleList);
@@ -315,7 +323,9 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
 
         mCurrentPage = 1;
 
-        mEndlessScrollListener.reset();
+        if (mEndlessScrollListener != null) {
+            mEndlessScrollListener.reset();
+        }
         mIsReloadMode = true;
 
         loadData();

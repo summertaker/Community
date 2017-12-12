@@ -15,7 +15,7 @@ import java.nio.charset.Charset;
 
 public class Util {
 
-    public static String getJapaneseString(String text, String encoding) {
+    public static String convertedString(String text, String encoding) {
         if (encoding == null) {
             encoding = "ISO-8859-1"; // // JIS, SJIS, 8859_1, SHIFT-JIS
         }

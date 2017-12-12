@@ -1,10 +1,14 @@
 package com.summertaker.community.common;
 
+import android.text.Html;
 import android.util.Log;
 
+import com.summertaker.community.data.ArticleDetailData;
+import com.summertaker.community.data.CommentData;
 import com.summertaker.community.data.MediaData;
 
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -20,6 +24,108 @@ public class BaseParser {
 
     public MediaData getMediaData(String response) {
         return new MediaData();
+    }
+
+    protected void parseDetail(Element root, ArticleDetailData data) {
+        if (root == null) {
+            return;
+        }
+
+        String content = root.html();
+        //Log.e(mTag, "원본\n" + content);
+
+        ArrayList<MediaData> mediaDatas = new ArrayList<>();
+
+        if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+            Elements imgs = root.select("img");
+            if (imgs.size() == 1) {
+                // 이미지가 한 개 있는 경우
+                Element img = root.select("img").first();
+                String src = img.attr("src");
+                addMediaData(mediaDatas, src, src, null);
+                content = content.replace(img.outerHtml(), ""); // 태그 제거
+            } else {
+                for (Element img : imgs) {
+                    String height = img.attr("height").trim();
+                    if (!height.isEmpty()) {
+                        height = img.attr("data-img-height").trim();
+                    }
+                    if (!height.isEmpty()) {
+                        int h = Integer.parseInt(height);
+                        if (h > 1000) {
+                            String src = img.attr("src");
+                            //Log.e(mTag, "src: " + src);
+                            addMediaData(mediaDatas, src, src, null);
+                            content = content.replace(img.outerHtml(), ""); // 태그 제거
+                        }
+                    }
+                }
+            }
+        } else {
+            // 이미지 태그 목록
+            for (Element el : root.select("img")) {
+                String src = el.attr("src");
+                content = content.replace(el.outerHtml(), ""); // 태그 제거
+                addMediaData(mediaDatas, src, src, null);
+            }
+        }
+
+        String search = "";
+        String replace = "";
+
+        // 비디오 태그
+        search = "<video\\s.+\\sposter=\"(.+)\"\\s*data-setup=\".+\">\\s*<source\\ssrc=\"(.+)\"\\s.+>\\s*</video>";
+        replace = "<a href=\"$2\"><img src=\"$1\"></a> <small><font color=\"#888888\">mp4</font></small>";
+        content = content.replaceAll(search, replace);
+
+        // 비디오 태그 목록
+        for (Element el : root.select("video")) {
+            String src = el.attr("poster");
+            content = content.replace(el.outerHtml(), ""); // 태그는 내용에서 제거
+            addMediaData(mediaDatas, src, src, null);
+        }
+
+        // 유튜브
+        content = parseYoutube(root, content, mediaDatas);
+        content = cleanHtml(content);
+
+        if (!BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
+            content = Html.fromHtml(content).toString();
+        }
+
+        Log.e(mTag, "결과\n" + content);
+
+        data.setContent(content);
+        data.setMediaDatas(mediaDatas);
+    }
+
+    private String cleanHtml(String html) {
+        // 태그 제거
+        html = html.replaceAll("<style>[^<|.]*?</style>", "");
+
+        // 공백 제거
+        html = html.replaceAll("\\s{2,}", " ");
+        //content = content.replaceAll("(&nbsp;){2,}", "");
+        html = html.replaceAll("&nbsp;", "");
+
+        // 속성 제거
+        html = html.replaceAll("<h6[^>]*?>", "<h6>");
+        html = html.replaceAll("<div[^>]*?>", "<div>");
+        html = html.replaceAll("<p[^>]*?>", "<p>");
+        html = html.replaceAll("<span[^>]*?>", "<span>");
+
+        // 빈 줄 없애기
+        html = html.replaceAll("<p>[\\s|<br>]*</p>", "");
+
+        html = html.replaceAll("<span>(<br>)*?</span>", "");
+        html = html.replaceAll("<div>(<br>)*?</div>", "");
+        html = html.replaceAll("<div>\\s*?</div>", "");
+        html = html.replaceAll("<div>\\s*?</div>", "");
+        html = html.replaceAll("<div>\\s*<br>*\\s*</div>", "");
+
+        html = html.trim();
+
+        return html;
     }
 
     protected String parseYoutube(Element root, String content, ArrayList<MediaData> mediaDatas) {

@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -138,64 +139,57 @@ public class TodayhumorParser extends BaseParser {
 
             ArrayList<MediaData> mediaDatas = new ArrayList<>();
 
+            String search = "";
+            String replace = "";
+
             if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
-                String search = "";
-                String replace = "";
+                Elements imgs = root.select("img");
+                if (imgs.size() == 1) {
+                    // 이미지가 한 개 있는 경우
+                    Element img = root.select("img").first();
+                    String src = img.attr("src");
+                    addMediaData(mediaDatas, src, src, null);
+                    content = content.replace(img.outerHtml(), ""); // 태그 제거
+                } else {
+                    // 대용량 이미지 처리
+                    search = "<div\\sclass=\"big_img_replace_div\"\\s.+\\simg_src=\"(.+)\"\\simg_filesize=\".*\">";
+                    replace = "<a href=\"$1\">이미지 보기</a>";
+                    content = content.replaceAll(search, replace);
 
-                // 대용량 이미지 처리
-                search = "<div\\sclass=\"big_img_replace_div\"\\s.+\\simg_src=\"(.+)\"\\simg_filesize=\".*\">";
-                replace = "<a href=\"$1\">이미지 보기</a>";
-                content = content.replaceAll(search, replace);
+                    // 비디오 태그
+                    search = "<video\\s.+\\sposter=\"(.+)\"\\s*data-setup=\".+\">\\s*<source\\ssrc=\"(.+)\"\\s.+>\\s*</video>";
+                    replace = "<a href=\"$2\"><img src=\"$1\"></a> <small><font color=\"#888888\">mp4</font></small>";
+                    content = content.replaceAll(search, replace);
+                    //for (Element el : root.select("video")) {
+                    //    String thumbnail = el.attr("poster");
+                    //    Element source = el.select("source").first();
+                    //    String url = source.attr("src");
+                    //    addMediaData(mediaDatas, thumbnail, null, url);
+                    //    content = content.replace(el.outerHtml(), ""); // 태그 제거
+                    //}
 
-                // 비디오 태그
-                search = "<video\\s.+\\sposter=\"(.+)\"\\s*data-setup=\".+\">\\s*<source\\ssrc=\"(.+)\"\\s.+>\\s*</video>";
-                replace = "<a href=\"$2\"><img src=\"$1\"></a> <small><font color=\"#888888\">mp4</font></small>";
-                content = content.replaceAll(search, replace);
-                //for (Element el : root.select("video")) {
-                //    String thumbnail = el.attr("poster");
-                //    Element source = el.select("source").first();
-                //    String url = source.attr("src");
-                //    addMediaData(mediaDatas, thumbnail, null, url);
-                //    content = content.replace(el.outerHtml(), ""); // 태그 제거
-                //}
+                    // 이미지/비디오 태그 목록
+                    for (Element el : root.select(".upfile")) {
+                        //Log.e(mTag, "el.html(): " + el.html());
 
-                // 유튜브
-                content = parseYoutube(root, content, mediaDatas);
+                        Element img = el.select("img").first();
+                        if (img != null) {
+                            String src = img.attr("src");
+                            addMediaData(mediaDatas, src, src, null);
+                            content = content.replace(el.outerHtml(), ""); // 태그 제거
+                        }
 
-                // 이미지/비디오 태그 목록
-                for (Element el : root.select(".upfile")) {
-                    //Log.e(mTag, "el.html(): " + el.html());
-
-                    Element img = el.select("img").first();
-                    if (img != null) {
-                        String src = img.attr("src");
-                        addMediaData(mediaDatas, src, src, null);
-                        content = content.replace(el.outerHtml(), ""); // 태그 제거
-                    }
-
-                    Element video = el.select("video").first();
-                    if (video != null) {
-                        String thumbnail = el.attr("poster");
-                        Element source = el.select("source").first();
-                        String url = source.attr("src");
-                        addMediaData(mediaDatas, thumbnail, null, url);
-                        content = content.replace(el.outerHtml(), ""); // 태그 제거
+                        Element video = el.select("video").first();
+                        if (video != null) {
+                            String thumbnail = el.attr("poster");
+                            Element source = el.select("source").first();
+                            String url = source.attr("src");
+                            addMediaData(mediaDatas, thumbnail, null, url);
+                            content = content.replace(el.outerHtml(), ""); // 태그 제거
+                        }
                     }
                 }
-
             } else {
-                //<div class='big_img_replace_div' img_id='' img_src='http://cdn.loonastatic.com//img/user/gif/0/1/5/0/0150779558318979.gif' img_filesize='3443962'>
-		        //  <div  style='display:table-cell; vertical-align: middle;'>
-                //    <div>대용량 이미지입니다.<br>확인하시려면 클릭하세요.<br>크기 : 3.28 MB</div>
-                //  </div>
-	            //</div>
-                //regex = "<div[^>|.]+img_src='(.*)'>\\s*<div[^>|.]+>\\s*<div>.+</div>\\s*</div>\\s*</div>";
-                //pattern = Pattern.compile(regex);
-                //matcher = pattern.matcher(content);
-                //while (matcher.find()) {
-                //    Log.d(mTag, "img_src: " + matcher.group(1));
-                //    //data.setId(matcher.group(1));
-                //}
                 for (Element el : root.select(".big_img_replace_div")) {
                     String src = el.attr("img_src");
                     //Log.e(mTag, "big_img_replace_div: " + src);
@@ -212,19 +206,18 @@ public class TodayhumorParser extends BaseParser {
                     addMediaData(mediaDatas, src, src, null);
                 }
 
-                // 유튜브
-                content = parseYoutube(root, content, mediaDatas);
-
                 // 비디오 태그 목록
                 for (Element el : root.select("video")) {
                     String src = el.attr("poster");
                     //Log.e(mTag, "video.src: " + src);
-
                     content = content.replace(el.outerHtml(), ""); // 태그는 내용에서 제거
-
                     addMediaData(mediaDatas, src, src, null);
                 }
             }
+
+            // 유튜브
+            content = parseYoutube(root, content, mediaDatas);
+
             data.setMediaDatas(mediaDatas);
 
             // 공백 없애기
@@ -232,24 +225,26 @@ public class TodayhumorParser extends BaseParser {
             //content = content.replaceAll("(&nbsp;){2,}", "");
             content = content.replaceAll("&nbsp;", "");
 
-            // 빈 줄 없애기
-            content = content.replaceAll("\\s*<div[^>]*>\\s*(<span[^>]*>)?\\s*<br>\\s*(</span>)?\\s*</div>\\s*", "<br>");
-            content = content.replaceAll("\\s*<div[^>]*>\\s*(&nbsp;)*\\s*</div>\\s*", "<br>");
-            content = content.replaceAll("(\\s*<br>\\s*){2,}", "<br>");
-            content = content.replaceAll("</div>\\s*<br>", "</div>");
+            content = content.replaceAll("<h6[^>]*?>", "<h6>");
+            content = content.replaceAll("<div[^>]*?>", "<div>");
+            content = content.replaceAll("<p[^>]*?>", "<p>");
+            content = content.replaceAll("<span[^>]*?>", "<span>");
 
-            // 이미지 처리 주위 div 제거
-            //content = content.replaceAll("<div[^>]*>\\s*(<img\\s[^>]*>)\\s*</div>", "$1<br>");
+            // 빈 줄 없애기
+            content = content.replaceAll("<[div|span]>[\\s|<br>]*?</[div|span]>", "");
+            content = content.replaceAll("<div>\\s*<br>", "<div>");
+            content = content.replaceAll("</div>\\s*<br>", "</div>");
 
             // 맨 앞, 맨 끝 <br> 잘라내기
             content = content.replaceAll("^(<br>)", "");
-            content = content.replaceAll("(<br>|<br />)$", "").trim();
+            content = content.replaceAll("(<br>)$", "").trim();
 
             if (!BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
                 content = Html.fromHtml(content).toString();
+                content = content.trim();
             }
 
-            //Log.e(mTag, "결과...\n" + content);
+            Log.e(mTag, "결과...\n" + content);
 
             data.setContent(content);
         }
@@ -358,24 +353,14 @@ public class TodayhumorParser extends BaseParser {
                     }
                 }
 
-                /*
-                // 내용을 일반 텍스트로 변환
-                content = content.replaceAll("\\s*<img.+?>\\s*(<br>)*\\s*", "");
-                content = content.replaceAll("\\s*(&nbsp;)+\\s*", " ");
-                content = content.replaceAll("\\s*(&gt;)+\\s*", ">");
-                content = content.replaceAll("\\s*(&lt;)+\\s*", "<");
-                content = content.replaceAll("<br />", "\n");
-                content = content.replaceAll("<br>", "");
-                */
-
                 content = content.trim();
 
-                if ("<br>".equals(content) || "<br><br />".equals(content)) {
+                if ("<br>".equals(content)) {
                     content = "";
                 } else {
                     // 맨 앞, 맨 끝 <br> 잘라내기
                     content = content.replaceAll("^(<br>)", "");
-                    content = content.replaceAll("(<br>|<br />)$", "");
+                    content = content.replaceAll("<br(\\s/)?>$", "");
                 }
 
                 if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {

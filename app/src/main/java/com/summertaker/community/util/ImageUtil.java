@@ -21,6 +21,8 @@ public class ImageUtil {
 
     public static Spannable getSpannableHtmlWithImageGetter(Context context, TextView textView, String value) {
         PicassoImageGetter imageGetter = new PicassoImageGetter(context, textView);
+        //GlideImageGetter imageGetter = new GlideImageGetter(context, textView);
+
         Spannable html;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
             html = (Spannable) Html.fromHtml(value, Html.FROM_HTML_MODE_LEGACY, imageGetter, null);

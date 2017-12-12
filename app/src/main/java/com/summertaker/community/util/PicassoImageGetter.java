@@ -3,28 +3,15 @@ package com.summertaker.community.util;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
-import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.Display;
-import android.view.WindowManager;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.resource.gif.GifDrawable;
-import com.bumptech.glide.request.RequestOptions;
-import com.bumptech.glide.request.target.SimpleTarget;
-import com.bumptech.glide.request.transition.Transition;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.Target;
 import com.summertaker.community.R;
-
-import java.io.IOException;
-import java.util.concurrent.ExecutionException;
 
 public class PicassoImageGetter implements Html.ImageGetter {
 
@@ -72,12 +59,36 @@ public class PicassoImageGetter implements Html.ImageGetter {
 
             int width = drawable.getIntrinsicWidth();
             int height = drawable.getIntrinsicHeight();
-
             drawable.setBounds(0, 0, width, height);
             setBounds(0, 0, width, height);
 
             if (mTextView != null) {
                 mTextView.setText(mTextView.getText());
+            }
+
+            // https://www.codeday.top/2017/07/30/31369.html
+            //checkBounds();
+        }
+
+        private void checkBounds() {
+            float defaultProportion = (float) drawable.getIntrinsicWidth() / (float) drawable.getIntrinsicHeight();
+            int width = Math.min(mTextView.getWidth(), drawable.getIntrinsicWidth());
+            int height = (int) ((float) width / defaultProportion);
+
+            if (getBounds().right != mTextView.getWidth() || getBounds().bottom != height) {
+
+                setBounds(0, 0, mTextView.getWidth(), height); //set to full width
+
+                int halfOfPlaceHolderWidth = (int) ((float) getBounds().right / 2f);
+                int halfOfImageWidth = (int) ((float) width / 2f);
+
+                drawable.setBounds(
+                        halfOfPlaceHolderWidth - halfOfImageWidth, //centering an image
+                        0,
+                        halfOfPlaceHolderWidth + halfOfImageWidth,
+                        height);
+
+                mTextView.setText(mTextView.getText()); //refresh text
             }
         }
 
@@ -113,6 +124,5 @@ public class PicassoImageGetter implements Html.ImageGetter {
         public void onPrepareLoad(Drawable placeHolderDrawable) {
 
         }
-
     }
 }

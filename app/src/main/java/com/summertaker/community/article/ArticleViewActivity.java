@@ -46,8 +46,10 @@ import com.summertaker.community.common.ImageViewActivity;
 import com.summertaker.community.data.ArticleDetailData;
 import com.summertaker.community.data.CommentData;
 import com.summertaker.community.data.MediaData;
+import com.summertaker.community.parser.BobaedreamParser;
 import com.summertaker.community.parser.ClienParser;
 import com.summertaker.community.parser.InstagramParser;
+import com.summertaker.community.parser.MlbparkParser;
 import com.summertaker.community.parser.PpomppuParser;
 import com.summertaker.community.parser.RuliwebParser;
 import com.summertaker.community.parser.TheqooParser;
@@ -275,6 +277,16 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             RuliwebParser ruliwebParser = new RuliwebParser();
             ruliwebParser.parseDetail(response, mArticleDetailData, mCommentDataList);
             renderData();
+        } else if (url.contains("bobaedream")) {
+            // 보배드림 글 내용
+            BobaedreamParser bobaedreamParser = new BobaedreamParser();
+            bobaedreamParser.parseDetail(response, mArticleDetailData, mCommentDataList);
+            renderData();
+        } else if (url.contains("mlbpark")) {
+            // 엠팍 글 내용
+            MlbparkParser mlbparkParser = new MlbparkParser();
+            mlbparkParser.parseDetail(response, mArticleDetailData);
+            renderData();
         } else if (url.contains("clien")) {
             // 클리앙 글 내용
             ClienParser clienParser = new ClienParser();
@@ -282,7 +294,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                 mCommentDataList = clienParser.parseComment(response);
                 renderComment();
             } else {
-                mArticleDetailData = clienParser.parseDetail(response);
+                clienParser.parseDetail(response, mArticleDetailData);
                 renderData();
             }
         } else if (url.contains("ppomppu")) {
@@ -430,20 +442,27 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
 
         // 댓글 로드하기
         if (mUrl.contains("todayhumor")) {
+            // 오유 댓글
             String url = "http://m.todayhumor.co.kr/ajax_memo_list.php?parent_table="
                     + mArticleDetailData.getTable() + "&parent_id="
                     + mArticleDetailData.getId() + "&is_mobile=Y";
             doStringRequest(url, Request.Method.GET);
         } else if (mUrl.contains("ruliweb")) {
+            // 루리웹 댓글
+            renderComment();
+        } else if (mUrl.contains("bobaedream")) {
+            // 보배드림 댓글
             renderComment();
         } else if (mUrl.contains("clien")) {
+            // 클리앙 댓글
             // https://m.clien.net/service/board/park/11501977?po=0&od=T33&sk=&sv=&category=&groupCd=clien_all&articlePeriod=default
             String[] array = mUrl.split("\\?");
             String url = array[0].replace("/service/", "/service/api/");
             url = url + "/comment?param={\"order\":\"date\",\"po\":0,\"ps\":100}";
-            //Log.e(mTag, "url: " + url);
+            Log.e(mTag, "comment url: " + url);
             doStringRequest(url, Request.Method.GET);
         } else if (mUrl.contains("theqoo")) {
+            // 더쿠 댓글
             //String url = "http://theqoo.net/index.php"; //?act=dispBoardContentCommentListTheqoo&document_srl=" + document_srl + "&cpage=0";
             //doJsonObjectRequest(url);
             mProgressBar.setVisibility(View.GONE);
@@ -592,6 +611,7 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
             };
             BaseApplication.getInstance().addToRequestQueue(stringRequest, mVolleyTag);
         } else {
+            Glide.with(this).asGif().load(R.drawable.loading).into(iv);
             if (thumbnail.toLowerCase().contains(".gif")) {
                 Glide.with(this).asGif().load(thumbnail).listener(new RequestListener<GifDrawable>() {
                     @Override
@@ -609,37 +629,9 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
                         Toast.makeText(getApplicationContext(), msg, Toast.LENGTH_LONG).show();
                         return false;
                     }
-                }).into(iv);
+                })/*.apply(new RequestOptions().placeholder(R.drawable.placeholder))*/.into(iv);
             } else {
-                Glide.with(this).load(thumbnail).apply(new RequestOptions()).into(iv);
-
-                /*
-                // Picasso: 용량 큰 이미지 로드 시 ImageView가 공백으로 표시됨
-                // https://stackoverflow.com/questions/23740307/load-large-images-with-picasso-and-custom-transform-object
-                int MAX_WIDTH = 240;
-                int MAX_HEIGHT = 320;
-                final Bitmap image;
-                try {
-                    image = Picasso.with(this).load("http://").get();
-                    int width = image.getWidth();
-                    int height = image.getHeight();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                Picasso.with(this).load(thumbnail).into(iv, new com.squareup.picasso.Callback() {
-                    @Override
-                    public void onSuccess() {
-                        Log.e(mTag, "Piccaso.onSuccess(): " + thumbnail);
-                    }
-
-                    @Override
-                    public void onError() {
-                        Log.e(mTag, "Piccaso.onError(): " + thumbnail);
-                        Toast.makeText(getApplicationContext(), "Piccaso.onError()...", Toast.LENGTH_LONG).show();
-                    }
-                });
-                */
+                Glide.with(this).load(thumbnail)/*.apply(new RequestOptions().placeholder(R.drawable.placeholder))*/.into(iv);
             }
         }
 

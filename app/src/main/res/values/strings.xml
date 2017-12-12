@@ -22,7 +22,7 @@
     <string name="ok">예</string>
     <string name="page">페이지</string>
     <string name="recommended_comment">추천 댓글</string>
-    <string name="settings_use_image_getter">ImageGetter 사용</string>
+    <string name="settings_use_image_getter">IMAGE GETTER 사용</string>
     <string name="site">사이트</string>
 
     <string name="title_activity_article_view">ArticleViewActivity</string>

@@ -174,7 +174,7 @@ public class RuliwebParser extends BaseParser {
         if (root != null) {
             //for (Element div : root.select(".comment_view")) {
             //    for (Element table : div.select(".comment_table")) {
-            for (Element tr : root.select(".comment_element")) {
+            for (Element row : root.select(".comment_element")) {
                 String content = "";
                 boolean isBest = false;
                 boolean isReply = false;
@@ -184,11 +184,11 @@ public class RuliwebParser extends BaseParser {
 
                 Element el;
 
-                el = tr.select("span.text").first();
+                el = row.select("span.text").first();
                 content = el.text();
                 //Log.e(mTag, "content: " + content);
 
-                el = tr.select(".icon_best").first(); // 베스트 댓글인 경우
+                el = row.select(".icon_best").first(); // 베스트 댓글인 경우
                 //String bestString = "";
                 if (el != null) {
                     //bestString = "[베스트] ";
@@ -196,7 +196,7 @@ public class RuliwebParser extends BaseParser {
                 }
                 //content = bestString + content;
 
-                el = tr.select(".btn_like").first();
+                el = row.select(".btn_like").first();
                 el = el.select(".num").first();
                 if (el != null) {
                     if (BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
@@ -206,12 +206,12 @@ public class RuliwebParser extends BaseParser {
                     }
                 }
 
-                el = tr.select(".comment_img").first();
+                el = row.select(".comment_img").first();
                 if (el != null) {
                     Log.e(mTag, "img.src: " + el.attr("src"));
                 }
 
-                el = tr.select(".is_child").first(); // 댓글의 댓글인 경우
+                el = row.select(".is_child").first(); // 댓글의 댓글인 경우
                 String replyString = "";
                 if (el != null) {
                     replyString = "Re. ";

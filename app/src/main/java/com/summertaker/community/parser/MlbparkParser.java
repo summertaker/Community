@@ -19,12 +19,26 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-public class ClienParser extends BaseParser {
+public class MlbparkParser extends BaseParser {
 
     public void parseList(String response, ArrayList<ArticleListData> dataList) {
+        /*
+        <li class='items'>
+            <div class='photo' >
+                <span class='icon_rank'>1</span>
+            </div>
+            <div class='text'>
+                <div class='title'>
+                    <a href='http://mlbpark.donga.com/mp/b.php?b=bullpen&id=201712030011630101&m=view' alt=''>유아인 드디어 전면전을 선포하나 보군요</a>
+                </div>
+                <div class='info'>
+                    <span class='nick'>wooks90</span>
+                    <span class='date'>2017-12-03</span>
+                </div>
+            </div>
+        </li>
+        */
         //Log.d(mTag, response);
 
         if (response == null || response.isEmpty()) {
@@ -32,49 +46,42 @@ public class ClienParser extends BaseParser {
         }
 
         Document doc = Jsoup.parse(response);
+        Element root = doc.select(".lists").first();
 
-        for (Element row : doc.select(".list_item.symph-row")) {
-            String title = "";
-            String url = "";
+        if (root != null) {
+            //Log.e(mTag, root.html());
 
-            Element a = row.select("a").first();
-            if (a == null) {
-                continue;
-            }
-            //Log.e(mTag, a.html());
+            for (Element row : root.select("li")) {
+                String title = "";
+                String url = "";
 
-            url = "https://m.clien.net" + a.attr("href");
+                Element a = row.select("a").first();
+                if (a == null) {
+                    continue;
+                }
+                url = a.attr("href");
 
-            Element el = a.select(".category").first();
-            if (el == null) {
-                el = a.select(".shortname").first();
-            }
-
-            if (el != null) {
-                title = a.html().replace(el.outerHtml(), "");
-                el = Jsoup.parse(title);
-                title = el.text();
-            } else {
                 title = a.text();
+
+                //Log.e(mTag, title);
+
+                ArticleListData data = new ArticleListData();
+                data.setTitle(title);
+                data.setUrl(url);
+                dataList.add(data);
             }
-
-            //Log.e(mTag, url);
-
-            ArticleListData data = new ArticleListData();
-            data.setTitle(title);
-            data.setUrl(url);
-            dataList.add(data);
         }
     }
 
     public void parseDetail(String response, ArticleDetailData detailData) {
+
         Document doc = Jsoup.parse(response);
-        Element root = doc.select(".post_content").first();
-        if (root == null) {
-            Log.e(mTag, "HTML ERROR: root is null...");
-        }
+
+        Element root = doc.select("#contentDetail").first();
 
         parseDetail(root, detailData);
+
+        //Log.e(mTag, "결과...\n" + detailData.getContent());
     }
 
     public ArrayList<CommentData> parseComment(String response) {
@@ -199,10 +206,6 @@ A.*?Z yields 2 matches: AiiZ and AoooZ
                 content = content.replaceAll("(<br>)$", ""); // 맨 끝 <br> 제거
 
                 content = content + " (+" + likeCountString + ")";
-
-                if (!BaseApplication.getInstance().SETTINGS_USE_IMAGE_GETTER) {
-                    content = Html.fromHtml(content).toString();
-                }
 
                 //Log.e(mTag, "결과\n" + content);
 
