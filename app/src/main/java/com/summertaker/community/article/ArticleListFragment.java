@@ -150,16 +150,20 @@ public class ArticleListFragment extends Fragment implements ArticleListInterfac
                 String title = data.getTitle();
                 String url = data.getUrl();
 
-                //Intent shareIntent = new Intent(Intent.ACTION_SEND);
+                String emails[] = {"summertaker@gmail.com"};
+
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_EMAIL, emails);
+                intent.putExtra(Intent.EXTRA_SUBJECT, title);
+                intent.putExtra(Intent.EXTRA_TEXT, url);
+                startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
+
+                //Intent shareIntent = new Intent();
                 //shareIntent.setType("text/plain");
+                //shareIntent.setPackage("com.ideashower.readitlater");
                 //shareIntent.putExtra(Intent.EXTRA_TEXT, url);
                 //startActivity(Intent.createChooser(shareIntent, title));
-
-                Intent shareIntent = new Intent();
-                shareIntent.setType("text/plain");
-                shareIntent.setPackage("com.ideashower.readitlater");
-                shareIntent.putExtra(Intent.EXTRA_TEXT, url);
-                startActivity(Intent.createChooser(shareIntent, title));
 
                 return true;
             }

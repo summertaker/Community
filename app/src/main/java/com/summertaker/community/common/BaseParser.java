@@ -93,7 +93,7 @@ public class BaseParser {
             content = Html.fromHtml(content).toString();
         }
 
-        Log.e(mTag, "결과\n" + content);
+        //Log.e(mTag, "결과\n" + content);
 
         data.setContent(content);
         data.setMediaDatas(mediaDatas);

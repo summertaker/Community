@@ -679,10 +679,14 @@ public class ArticleViewActivity extends BaseActivity implements ArticleViewInte
     }
 
     public void share() {
-        Intent shareIntent = new Intent(Intent.ACTION_SEND);
-        shareIntent.setType("text/plain");
-        shareIntent.putExtra(Intent.EXTRA_TEXT, mUrl);
-        startActivity(Intent.createChooser(shareIntent, mTitle));
+        String emails[] = {"summertaker@gmail.com"};
+
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_EMAIL, emails);
+        intent.putExtra(Intent.EXTRA_SUBJECT, mTitle);
+        intent.putExtra(Intent.EXTRA_TEXT, mUrl);
+        startActivity(Intent.createChooser(intent, getString(R.string.action_share)));
     }
 
     @Override

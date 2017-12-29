@@ -63,13 +63,13 @@ public class BaseApplication extends Application {
         //mSiteList.add(new SiteData("루리웹스샷", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1008", "?page="));
 
         //mSiteList.add(new SiteData("웃대오늘베", "http://m.humoruniv.com/board/list.html?table=pds&st=day&pg=0"));
-        //mSiteList.add(new SiteData("SLR클럽추천", USER_AGENT_MOBILE, "http://www.slrclub.com/bbs/zboard.php?id=best_article&category=1&setsearch=category", ""));
-        //mSiteList.add(new SiteData("SLR클럽인기", "http://www.slrclub.com/bbs/zboard.php?id=hot_article&category=1&setsearch=category"));
+        //mSiteList.add(new SiteData("SLR추천", USER_AGENT_MOBILE, "http://www.slrclub.com/bbs/zboard.php?id=best_article&category=1&setsearch=category", ""));
+        //mSiteList.add(new SiteData("SLR인기", "http://www.slrclub.com/bbs/zboard.php?id=hot_article&category=1&setsearch=category"));
 
-        //mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
-        //mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
-        //mSiteList.add(new SiteData("48스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=talk48&filter_mode=normal&category=161632742", "&page="));
-        //mSiteList.add(new SiteData("48돌", USER_AGENT_MOBILE, "http://theqoo.net/dol48?filter_mode=normal", "&page="));
+        mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
+        mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
+        mSiteList.add(new SiteData("48스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=talk48&filter_mode=normal&category=161632742", "&page="));
+        mSiteList.add(new SiteData("48돌", USER_AGENT_MOBILE, "http://theqoo.net/dol48?filter_mode=normal", "&page="));
     }
 
     public static synchronized BaseApplication getInstance() {
