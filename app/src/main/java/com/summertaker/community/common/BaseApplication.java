@@ -44,14 +44,14 @@ public class BaseApplication extends Application {
 
         mSiteList = new ArrayList<>();
 
-        mSiteList.add(new SiteData("오유베오베", USER_AGENT_MOBILE, "http://m.todayhumor.co.kr/list.php?table=bestofbest", "&page="));
+        mSiteList.add(new SiteData("오유베오베", USER_AGENT_MOBILE, "http://m.todayhumor.co.kr/list.php?table=sisa&kind=best", "&page="));
         mSiteList.add(new SiteData("보배베스트", USER_AGENT_MOBILE, "http://m.bobaedream.co.kr/board/new_writing/best", "/"));
         mSiteList.add(new SiteData("클리앙공감", USER_AGENT_MOBILE, "https://m.clien.net/service/group/board_all?&od=T33", "&po="));
-        mSiteList.add(new SiteData("클리앙소식", USER_AGENT_MOBILE, "https://m.clien.net/service/board/news?&od=T31", "&po="));
-        mSiteList.add(new SiteData("클리앙팁", USER_AGENT_MOBILE, "https://m.clien.net/service/board/lecture?&od=T31", "&po="));
-        mSiteList.add(new SiteData("루리웹PC", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1003/list", "?page="));
-        mSiteList.add(new SiteData("루리웹모바일", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1004/list", "?page="));
-        mSiteList.add(new SiteData("루리웹콘솔", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1001/list", "?page="));
+        //mSiteList.add(new SiteData("클리앙소식", USER_AGENT_MOBILE, "https://m.clien.net/service/board/news?&od=T31", "&po="));
+        //mSiteList.add(new SiteData("클리앙팁", USER_AGENT_MOBILE, "https://m.clien.net/service/board/lecture?&od=T31", "&po="));
+        //mSiteList.add(new SiteData("루리웹PC", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1003/list", "?page="));
+        //mSiteList.add(new SiteData("루리웹모바일", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1004/list", "?page="));
+        //mSiteList.add(new SiteData("루리웹콘솔", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/1001/list", "?page="));
         mSiteList.add(new SiteData("루리웹사정경", USER_AGENT_MOBILE, "http://m.ruliweb.com/news/board/300018/list", "?page="));
         //mSiteList.add(new SiteData("뽐뿌인기", USER_AGENT_MOBILE, "http://m.ppomppu.co.kr/new/pop_bbs.php", "?page="));
 
@@ -66,10 +66,11 @@ public class BaseApplication extends Application {
         //mSiteList.add(new SiteData("SLR추천", USER_AGENT_MOBILE, "http://www.slrclub.com/bbs/zboard.php?id=best_article&category=1&setsearch=category", ""));
         //mSiteList.add(new SiteData("SLR인기", "http://www.slrclub.com/bbs/zboard.php?id=hot_article&category=1&setsearch=category"));
 
-        mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
-        mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
-        mSiteList.add(new SiteData("48스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=talk48&filter_mode=normal&category=161632742", "&page="));
-        mSiteList.add(new SiteData("48돌", USER_AGENT_MOBILE, "http://theqoo.net/dol48?filter_mode=normal", "&page="));
+        //mSiteList.add(new SiteData("더쿠스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=square&filter_mode=normal", "&page="));
+        //mSiteList.add(new SiteData("재팬스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=japan&filter_mode=normal&category=26063", "&page="));
+        //mSiteList.add(new SiteData("사카미치", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=jdol&filter_mode=normal&category=29770", "&page="));
+        //mSiteList.add(new SiteData("48스퀘어", USER_AGENT_MOBILE, "http://theqoo.net/index.php?mid=talk48&filter_mode=normal&category=161632742", "&page="));
+        //mSiteList.add(new SiteData("48돌", USER_AGENT_MOBILE, "http://theqoo.net/dol48?filter_mode=normal", "&page="));
     }
 
     public static synchronized BaseApplication getInstance() {
